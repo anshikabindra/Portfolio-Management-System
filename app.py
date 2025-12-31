@@ -48,48 +48,27 @@ def register():
     return render_template('register.html')
 
 # Route: Login
-
-
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/', methods=['GET', 'POST'])
 def login():
-    conn = None
-    cursor = None
-    try:
-        if request.method == "POST":
-            username = request.form["username"]
-            password = request.form["password"]
-
-            # Connect to DB
-            conn = mysql.connector.connect(
-                host="127.0.0.1",
-                user="root",
-                password="Anshika",
-                database="portfoliomanagement"
-            )
-            cursor = conn.cursor()
-
-            # Query user
-            cursor.execute("SELECT * FROM users WHERE username=%s AND password=%s", (username, password))
+    if request.method == 'POST':
+        email = request.form['email'].lower()
+        password = request.form['password']
+        try:
+            conn = mysql.connector.connect(**db_config)
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE email=%s AND password=%s", (email, password))
             user = cursor.fetchone()
-
             if user:
-                return redirect(url_for("dashboard"))
+                session['user'] = email
+                return redirect(url_for('dashboard'))
             else:
-                return "Invalid credentials", 401
-
-        return render_template("login.html")
-
-    except Exception as e:
-        # Log the real error so you can debug
-        print("Login error:", e)
-        return "Internal Server Error", 500
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if conn is not None:
-            conn.close()
-
+                flash('Invalid email or password.')
+        except Error as e:
+            flash(f"Database error during login: {e}")
+        finally:
+            if cursor: cursor.close()
+            if conn: conn.close()
+    return render_template('login.html')
 
 # Route: Dashboard
 @app.route('/dashboard')
