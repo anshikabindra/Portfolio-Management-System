@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 import mysql.connector
 from mysql.connector import Error
-
+from flask import session 
 # Blueprint setup
 bank_bp = Blueprint('bank', __name__)
 
@@ -25,8 +25,17 @@ def bank_transactions():
         query = "SELECT * FROM bank_transaction"
         params = []
 
+        # 🔹 NEW: always filter by logged-in user
+        if 'user_id' in session:
+            query += " WHERE user_id = %s"
+            params.append(session['user_id'])
+
+        # 🔹 KEEP your original date filter logic
         if from_date and to_date:
-            query += " WHERE DT BETWEEN %s AND %s"
+            if "WHERE" in query:
+                query += " AND DT BETWEEN %s AND %s"
+            else:
+                query += " WHERE DT BETWEEN %s AND %s"
             params.extend([from_date, to_date])
 
         cursor.execute(query, params)
@@ -45,6 +54,7 @@ def bank_transactions():
         if cursor: cursor.close()
         if conn: conn.close()
 
+
 fields = [
     {"label": "Date", "name": "DT", "type": "date"},
     {"label": "Narration", "name": "Narration", "type": "text"},
@@ -62,18 +72,31 @@ def add_bank_transaction():
         form = request.form
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
+
+        user_id = session.get('user_id')
+
         cursor.execute("""
-            INSERT INTO bank_transaction (DT, Narration, CHq_Ref_No, Value_Dt, Withdrawal_Amt, Deposit_Amt, Closing_Balance,bank_name)
-            VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
-        """, (form['DT'], form['Narration'], form['CHq_Ref_No'], form['Value_Dt'], form['Withdrawal_Amt'], form['Deposit_Amt'], form['Closing_Balance'],form['bank_name']))
+            INSERT INTO bank_transaction 
+            (DT, Narration, CHq_Ref_No, Value_Dt, Withdrawal_Amt, Deposit_Amt, Closing_Balance, bank_name, user_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            form['DT'],
+            form['Narration'],
+            form['CHq_Ref_No'],
+            form['Value_Dt'],
+            form['Withdrawal_Amt'],
+            form['Deposit_Amt'],
+            form['Closing_Balance'],
+            form['bank_name'],
+            user_id
+        ))
+
         conn.commit()
         cursor.close()
         conn.close()
         return redirect(url_for('bank.bank_transactions'))
 
     return render_template('add_transaction.html', title='Add Bank Transaction', fields=fields, back_url='bank.bank_transactions')
-
-
 
 
 
