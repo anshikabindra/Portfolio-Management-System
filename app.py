@@ -11,6 +11,9 @@ from Equity import equity_bp
 from mf_transactions import mf_bp
 from pf_transactions import pf_bp
 from gold import gold_bp
+from real_estate import real_estate_bp
+from cash import cash_bp
+from private_equity import private_equity_bp
 
 
 app = Flask(__name__)
@@ -188,6 +191,9 @@ app.register_blueprint(mf_bp)
 app.register_blueprint(pf_bp)
 app.register_blueprint(category_mapping_bp)
 app.register_blueprint(gold_bp)
+app.register_blueprint(real_estate_bp)
+app.register_blueprint(cash_bp)
+app.register_blueprint(private_equity_bp)
 
 if __name__ == '__main__':
    app.run(host="0.0.0.0",port=8080)
