@@ -200,6 +200,18 @@
   <a href="javascript:void(0)" class="asset-card" onclick="toggleGold()">Gold</a>
   {% endif %}
 
+    {% if real_estate_exists %}
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('realEstateSection')">Real Estate</a>
+  {% endif %}
+
+  {% if cash_exists %}
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('cashSection')">Cash Investments</a>
+  {% endif %}
+
+  {% if pe_exists %}
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('peSection')">Private Equity</a>
+  {% endif %}
+
   <div class="asset-card add-asset-btn-primary" onclick="openAddSheet()">Add Asset</div>
 
 </div>
@@ -244,6 +256,93 @@
 </div>
 {% endif %}
 
+  <!-- REAL ESTATE -->
+{% if real_estate_exists %}
+<div id="realEstateSection" class="inline-section">
+  <h2>Real Estate</h2>
+  <table>
+    <thead>
+      <tr>
+        {% for k in real_estate[0].keys() %}
+          {% if k != 'user_id' %}
+            <th>{{ k }}</th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in real_estate %}
+      <tr>
+        {% for k in real_estate[0].keys() %}
+          {% if k != 'user_id' %}
+            <td>{{ row[k] }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+    <!-- CASH -->
+{% if cash_exists %}
+<div id="cashSection" class="inline-section">
+  <h2>Cash Investments</h2>
+  <table>
+    <thead>
+      <tr>
+        {% for k in cash_investments[0].keys() %}
+          {% if k != 'user_id' %}
+            <th>{{ k }}</th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in cash_investments %}
+      <tr>
+        {% for k in cash_investments[0].keys() %}
+          {% if k != 'user_id' %}
+            <td>{{ row[k] }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+    <!-- PRIVATE EQUITY -->
+{% if pe_exists %}
+<div id="peSection" class="inline-section">
+  <h2>Private Equity Investments</h2>
+  <table>
+    <thead>
+      <tr>
+        {% for k in pe_investments[0].keys() %}
+          {% if k != 'user_id' %}
+            <th>{{ k }}</th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in pe_investments %}
+      <tr>
+        {% for k in pe_investments[0].keys() %}
+          {% if k != 'user_id' %}
+            <td>{{ row[k] }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
 <div id="transactionsSection">
   {% if transactions %}
   <h2>{{ title }}</h2>
@@ -281,9 +380,9 @@
   </div>
 
   <div class="add-item" onclick="goTo('/add_gold_transaction')">Gold</div>
-  <div class="add-item" onclick="goTo('/add/real-estate')">Real Estate</div>
+  <div class="add-item" onclick="goTo('/add_real_estate')">Real Estate</div>
   <div class="add-item" onclick="goTo('/add/esops')">ESOPs / RSUs</div>
-  <div class="add-item" onclick="goTo('/add/private-equity')">Private Equity</div>
+  <div class="add-item" onclick="goTo('/add_private_equity')">Private Equity</div>
   <div class="add-item" onclick="goTo('/add/cash')">Cash Investments</div>
   <div class="add-item" onclick="goTo('/add/digital-assets')">Digital Assets</div>
 </div>
@@ -291,6 +390,18 @@
 </main>
 
 <script>
+function toggleSection(sectionId) {
+  const allSections = document.querySelectorAll('.inline-section');
+  const tx = document.getElementById("transactionsSection");
+
+  allSections.forEach(sec => sec.style.display = "none");
+
+  const active = document.getElementById(sectionId);
+  if (active) active.style.display = "block";
+
+  if (tx) tx.style.display = "none";
+}
+
 function toggleGold() {
   const gold = document.getElementById("goldSection");
   const tx = document.getElementById("transactionsSection");
@@ -337,7 +448,9 @@ document.addEventListener("DOMContentLoaded", function () {
     "/mf_transactions": { add: "/add_mf_transaction", table: "Mutual Fund Transactions" },
     "/pf_transactions": { add: "/add_pf_transaction", table: "PF Transactions" },
     "/category_mapping": { add: "/add_category_mapping", table: "Category Mapping" },
-    "/gold_transactions": { add: "/add_gold_transaction", table: "Gold Investments" }
+    "/gold_transactions": { add: "/add_gold_transaction", table: "Gold Investments" },
+     "/real_estate": { add: "//add_real_estate", table: "real estate" },
+      "/private_equity": { add: "//add_private_equity", table: "private equity" }
   };
 
   if (routeConfig[path]) {

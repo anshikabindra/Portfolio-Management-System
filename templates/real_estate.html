@@ -1,0 +1,41 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Real Estate</title>
+</head>
+
+<body>
+
+<h2>Real Estate</h2>
+
+<a href="{{ url_for('real_estate.add_real_estate') }}">Add Real Estate</a>
+
+{% if real_estate %}
+<table>
+  <thead>
+    <tr>
+      {% for key in real_estate[0].keys() %}
+        {% if key != 'user_id' %}
+          <th>{{ key }}</th>
+        {% endif %}
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for txn in real_estate %}
+    <tr>
+      {% for key, value in txn.items() %}
+        {% if key != 'user_id' %}
+          <td>{{ value }}</td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No real estate yet.</p>
+{% endif %}
+
+</body>
+</html>

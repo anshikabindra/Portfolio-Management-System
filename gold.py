@@ -44,7 +44,7 @@ def add_gold_transaction():
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
 
-            # 🔹 NEW: get logged-in user id
+
             user_id = session.get('user_id')
 
             cursor.execute("""
@@ -55,7 +55,7 @@ def add_gold_transaction():
                 float(form.get('value_per_gram')),
                 float(form.get('quantity')),
                 form.get('investment_date'),
-                user_id                 # 🔹 ATTACHED HERE
+                user_id
             ))
             conn.commit()
         except Error as e:

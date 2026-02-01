@@ -1,0 +1,41 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Private Equity</title>
+</head>
+
+<body>
+
+<h2>Private Equity</h2>
+
+<a href="{{ url_for('private_equity.add_private_equity') }}">Add Private Equity</a>
+
+{% if private_equity %}
+<table>
+  <thead>
+    <tr>
+      {% for key in private_equity[0].keys() %}
+        {% if key != 'user_id' %}
+          <th>{{ key }}</th>
+        {% endif %}
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for txn in private_equity %}
+    <tr>
+      {% for key, value in txn.items() %}
+        {% if key != 'user_id' %}
+          <td>{{ value }}</td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No private equity yet.</p>
+{% endif %}
+
+</body>
+</html>

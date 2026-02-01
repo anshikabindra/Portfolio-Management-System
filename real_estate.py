@@ -22,6 +22,14 @@ fields = [
 @real_estate_bp.route('/real_estate', methods=['GET', 'POST'])
 def real_estate():
     try:
+        # ✅ SAFETY CHECK (does not change functionality)
+        if 'user_id' not in session:
+            return render_template(
+                'dashboard.html',
+                transactions=[],
+                title='Real Estate'
+            )
+
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
 
@@ -37,8 +45,10 @@ def real_estate():
     except Error as e:
         return f"An error occurred: {e}"
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 
 @real_estate_bp.route('/add_real_estate', methods=['GET', 'POST'])
@@ -66,8 +76,10 @@ def add_real_estate():
         except Error as e:
             return f"An error occurred: {e}"
         finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
         return redirect(url_for('real_estate.real_estate'))
 
