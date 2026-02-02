@@ -182,6 +182,15 @@
   <h2>Dashboard</h2>
   <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
 </header>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <script>
+      {% for category, message in messages %}
+        alert("{{ message }}");
+      {% endfor %}
+    </script>
+  {% endif %}
+{% endwith %}
 
 <main>
 
@@ -208,7 +217,7 @@
   <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('cashSection')">Cash Investments</a>
   {% endif %}
 
-  {% if pe_exists %}
+  {% if private_equity_exists %}
   <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('peSection')">Private Equity</a>
   {% endif %}
 
@@ -292,7 +301,7 @@
   <table>
     <thead>
       <tr>
-        {% for k in cash_investments[0].keys() %}
+        {% for k in cash[0].keys() %}
           {% if k != 'user_id' %}
             <th>{{ k }}</th>
           {% endif %}
@@ -300,9 +309,9 @@
       </tr>
     </thead>
     <tbody>
-      {% for row in cash_investments %}
+      {% for row in cash %}
       <tr>
-        {% for k in cash_investments[0].keys() %}
+        {% for k in cash[0].keys() %}
           {% if k != 'user_id' %}
             <td>{{ row[k] }}</td>
           {% endif %}
@@ -315,13 +324,13 @@
 {% endif %}
 
     <!-- PRIVATE EQUITY -->
-{% if pe_exists %}
+{% if private_equity_exists %}
 <div id="peSection" class="inline-section">
   <h2>Private Equity Investments</h2>
   <table>
     <thead>
       <tr>
-        {% for k in pe_investments[0].keys() %}
+        {% for k in private_equity[0].keys() %}
           {% if k != 'user_id' %}
             <th>{{ k }}</th>
           {% endif %}
@@ -329,9 +338,9 @@
       </tr>
     </thead>
     <tbody>
-      {% for row in pe_investments %}
+      {% for row in private_equity %}
       <tr>
-        {% for k in pe_investments[0].keys() %}
+        {% for k in private_equity[0].keys() %}
           {% if k != 'user_id' %}
             <td>{{ row[k] }}</td>
           {% endif %}
@@ -383,7 +392,7 @@
   <div class="add-item" onclick="goTo('/add_real_estate')">Real Estate</div>
   <div class="add-item" onclick="goTo('/add/esops')">ESOPs / RSUs</div>
   <div class="add-item" onclick="goTo('/add_private_equity')">Private Equity</div>
-  <div class="add-item" onclick="goTo('/add/cash')">Cash Investments</div>
+  <div class="add-item" onclick="goTo('/add_cash_investment')">Cash Investments</div>
   <div class="add-item" onclick="goTo('/add/digital-assets')">Digital Assets</div>
 </div>
 
@@ -403,16 +412,18 @@ function toggleSection(sectionId) {
 }
 
 function toggleGold() {
-  const gold = document.getElementById("goldSection");
+  const allSections = document.querySelectorAll('.inline-section');
   const tx = document.getElementById("transactionsSection");
+  const gold = document.getElementById("goldSection");
 
-  if (gold.style.display === "block") {
-    gold.style.display = "none";
-    if (tx) tx.style.display = "block";
-  } else {
-    gold.style.display = "block";
-    if (tx) tx.style.display = "none";
-  }
+  // Hide all sections first
+  allSections.forEach(sec => sec.style.display = "none");
+
+  // Show only gold
+  if (gold) gold.style.display = "block";
+
+  // Hide transactions table
+  if (tx) tx.style.display = "none";
 }
 
 function openAddSheet() {
@@ -450,7 +461,8 @@ document.addEventListener("DOMContentLoaded", function () {
     "/category_mapping": { add: "/add_category_mapping", table: "Category Mapping" },
     "/gold_transactions": { add: "/add_gold_transaction", table: "Gold Investments" },
      "/real_estate": { add: "//add_real_estate", table: "real estate" },
-      "/private_equity": { add: "//add_private_equity", table: "private equity" }
+      "/private_equity": { add: "//add_private_equity", table: "private equity" },
+      "/cash": { add: "//add_cash_investment", table: "cash" }
   };
 
   if (routeConfig[path]) {

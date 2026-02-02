@@ -1,0 +1,41 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Cash Investments</title>
+</head>
+
+<body>
+
+<h2>Cash Investments</h2>
+
+<a href="{{ url_for('cash.add_cash_investment') }}">Add Cash Investments</a>
+
+{% if cash %}
+<table>
+  <thead>
+    <tr>
+      {% for key in cash[0].keys() %}
+        {% if key != 'user_id' %}
+          <th>{{ key }}</th>
+        {% endif %}
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for txn in cash %}
+    <tr>
+      {% for key, value in txn.items() %}
+        {% if key != 'user_id' %}
+          <td>{{ value }}</td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No cash investments yet.</p>
+{% endif %}
+
+</body>
+</html>

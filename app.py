@@ -115,6 +115,50 @@ def inject_gold():
         gold_exists=(len(gold_investments) > 0),
         gold_investments=gold_investments
     )
+@app.context_processor
+def inject_other_assets():
+    real_estate = []
+    cash = []
+    private_equity = []
+
+    if 'user_id' in session:
+        try:
+            conn = mysql.connector.connect(**db_config)
+            cursor = conn.cursor(dictionary=True)
+
+            cursor.execute(
+                "SELECT * FROM real_estate WHERE user_id = %s",
+                (session['user_id'],)
+            )
+            real_estate = cursor.fetchall()
+
+            cursor.execute(
+                "SELECT * FROM cash_investments WHERE user_id = %s",
+                (session['user_id'],)
+            )
+            cash_investments = cursor.fetchall()
+
+            cursor.execute(
+                "SELECT * FROM private_equity WHERE user_id = %s",
+                (session['user_id'],)
+            )
+            pe_investments = cursor.fetchall()
+
+        except Exception:
+            pass
+        finally:
+            cursor.close()
+            conn.close()
+
+    return dict(
+        real_estate_exists=len(real_estate) > 0,
+        cash_exists=len(cash) > 0,
+        private_equity_exists=len(private_equity) > 0,
+        real_estate=real_estate,
+        cash=cash,
+        private_equity= private_equity
+    )
+
 
 # Route: Upload CSV
 @app.route('/upload_csv', methods=['POST'])
@@ -132,7 +176,10 @@ def upload_csv():
         'mutual fund transactions': 'mutual_fund_transactions',
         'pf transactions': 'pf',
         'category mapping': 'Category_Mapping',
-        'gold investments': 'gold_investments'
+        'gold investments': 'gold_investments',
+        'real estate': 'real_estate',
+        'private equity': 'private_equity',
+        'cash investments': 'cash'
     }
     table_name = table_map.get(table_name_raw.lower())
 
@@ -170,13 +217,13 @@ def upload_csv():
             cursor.execute(query, cleaned_row)
 
         conn.commit()
-        flash('CSV uploaded successfully.')
-    except Error as e:
-        flash(f"Error uploading CSV: {e}")
-    except Exception as ex:
-        import traceback
-        print(traceback.format_exc())
-        flash(f"Unexpected error: {ex}")
+        flash('CSV file successfully uploaded', 'success')
+        return redirect(request.referrer)
+
+    except Exception as e:
+        print(e)
+        flash('Error uploading CSV file', 'error')
+        return redirect(request.referrer)
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
