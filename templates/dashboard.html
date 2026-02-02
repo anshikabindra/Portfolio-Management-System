@@ -2,332 +2,476 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard Menu</title>
+  <title>Dashboard</title>
+
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
       background-color: #f1f5f9;
       color: #333;
-      display: flex;
-      height: 100vh;
+      padding-bottom: 70px;
     }
 
-    .sidebar {
-      width: 220px;
+    header {
       background-color: #1e293b;
       color: white;
-      padding: 20px;
-      box-sizing: border-box;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .sidebar h2 {
-      font-size: 20px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .sidebar a {
-      display: block;
-      color: white;
-      text-decoration: none;
-      padding: 10px 15px;
-      margin: 10px 0;
-      border-radius: 4px;
-      transition: background 0.3s;
-    }
-
-    .sidebar a:hover {
-      background-color: #334155;
-    }
-
-    .content {
-      flex-grow: 1;
-      padding: 40px;
+    header h2 {
+      margin: 0;
+      font-size: 18px;
     }
 
     .logout-btn {
       background: #dc2626;
       color: white;
-      padding: 4px 10px;
+      padding: 6px 12px;
+      border-radius: 6px;
       text-decoration: none;
-      border-radius: 4px;
-      float: right;
+      font-size: 14px;
     }
 
-    .logout-btn:hover {
-      background: #b91c1c;
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .asset-card {
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      text-decoration: none;
+      color: #1e293b;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .asset-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .add-asset-btn-primary {
+      justify-content: center;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 999px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
 
     table {
       width: 100%;
+      background: white;
       border-collapse: collapse;
-      margin-top: 30px;
-      background-color: white;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-
-    table th, table td {
-      padding: 12px 15px;
-      border: 1px solid #e2e8f0;
-      text-align: left;
-    }
-
-    table th {
-      background-color: #e2e8f0;
-      font-weight: 600;
-    }
-
-    table tr:nth-child(even) {
-      background-color: #f9fafb;
-    }
-
-    table tr:hover {
-      background-color: #f1f5f9;
-    }
-
-    form.date-filter {
+      border-radius: 14px;
+      overflow: hidden;
       margin-top: 20px;
-      margin-bottom: 10px;
     }
 
-    form.date-filter input[type="date"] {
-      padding: 5px;
-      margin-right: 10px;
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
     }
 
-    form.date-filter button {
-      padding: 5px 10px;
-      margin-right: 5px;
-      background-color: #1e40af;
+    th {
+      background: #e2e8f0;
+    }
+
+    .inline-section {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .add-bank-btn {
+      display: none;
+      margin: 20px 0;
+      padding: 10px 18px;
+      border-radius: 20px;
+      background: #2563eb;
       color: white;
       border: none;
-      border-radius: 4px;
       cursor: pointer;
     }
 
-    form.date-filter a {
-      padding: 5px 10px;
-      background-color: #475569;
-      color: white;
-      border-radius: 4px;
-      text-decoration: none;
-    }
-
-    form.date-filter button:hover {
-      background-color: #1e3a8a;
-    }
-
-    form.date-filter a:hover {
-      background-color: #334155;
-    }
-
-    .add-btn {
-      margin: 10px 5px 20px 0;
-      padding: 6px 12px;
-      background-color: #10b981;
+    .upload-csv-btn {
+      margin-left: 10px;
+      padding: 10px 18px;
+      border-radius: 20px;
+      background: #2563eb;
       color: white;
       border: none;
-      border-radius: 4px;
       cursor: pointer;
     }
 
-    .add-btn:hover {
-      background-color: #059669;
+    #uploadCsvForm input[type="file"] {
+      display: none;
     }
 
-    .csv-upload {
-      margin-bottom: 20px;
+    .add-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      z-index: 1000;
     }
 
-    .csv-upload input[type="file"] {
-      padding: 5px;
-      margin-right: 10px;
+    .add-sheet {
+      position: fixed;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      background: white;
+      border-radius: 18px 18px 0 0;
+      transition: bottom 0.3s ease;
+      z-index: 1002;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
-    .csv-upload button {
-      background-color: #2563eb;
+    .add-sheet-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid #e5e7eb;
     }
 
-    .csv-upload button:hover {
-      background-color: #1d4ed8;
+    .add-item {
+      padding: 16px 22px;
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .add-item:hover {
+      background: #f1f5f9;
+    }
+
+    #uploadCsvForm {
+      display: none;
     }
   </style>
 </head>
+
 <body>
-  <div class="sidebar">
-    <h2>Menu</h2>
-    <a href="{{ url_for('bank.bank_transactions') }}">Bank Transactions</a>
-    <a href="{{ url_for('fd.fd_transactions') }}">FD Transactions</a>
-    <a href="{{ url_for('equity.equity_transactions') }}">Equity</a>
-    <a href="{{ url_for('mf.mf_transactions') }}">Mutual Fund</a>
-    <a href="{{ url_for('pf.pf_transactions') }}">PF</a>
-    <a href="{{ url_for('category_mapping.category_mapping') }}">Category_Mapping</a>
-  </div>
 
-  <div class="content">
-    <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
-    <h1>Welcome to the Dashboard</h1>
+<header>
+  <h2>Dashboard</h2>
+  <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+</header>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <script>
+      {% for category, message in messages %}
+        alert("{{ message }}");
+      {% endfor %}
+    </script>
+  {% endif %}
+{% endwith %}
 
-    {% if title %}
+<main>
 
-      {% if title != 'Category_Mapping' %}
-      <!-- Filter Form -->
-      <form method="get" action="{{ request.path }}" class="date-filter">
-        <label>From:
-          <input type="date" name="from_date" value="{{ from_date }}">
-        </label>
-        <label>To:
-          <input type="date" name="to_date" value="{{ to_date }}">
-        </label>
-        <button type="submit">Filter</button>
-        <a href="{{ request.path }}">Reset</a>
-      </form>
-      {% endif %}
+<h1>Welcome to the Dashboard</h1>
 
-      <!-- Add Transaction Button -->
-      <form method="get" action="{% if title == 'Bank Transactions' %}{{ url_for('bank.add_bank_transaction') }}
-                                 {% elif title == 'FD Transactions' %}{{ url_for('fd.add_fd_transaction') }}
-                                 {% elif title == 'Equity Transactions' %}{{ url_for('equity.add_equity_transaction') }}
-                                 {% elif title == 'Mutual Fund Transactions' %}{{ url_for('mf.add_mf_transaction') }}
-                                 {% elif title == 'PF Transactions' %}{{ url_for('pf.add_pf_transaction') }}
-                                 {% elif title == 'Category_Mapping' %}{{ url_for('category_mapping.add_category_mapping') }}
-                                 {% endif %}">
-        <button type="submit" class="add-btn">+ Add {{ title.split()[0] }} Transaction</button>
-      </form>
+<div class="asset-grid">
 
-      <!-- Upload CSV Button -->
-      <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="csv-upload">
-        <input type="file" name="csv_file" accept=".csv" required>
-        <input type="hidden" name="table_name" value="{{ title }}">
-        <button type="submit" class="add-btn"> Upload CSV</button>
-      </form>
-    {% endif %}
-{% if title == 'Category_Mapping' %}
-  <!-- Filter by Category -->
-  <form method="get" action="{{ request.path }}" class="date-filter">
-    <label>Category:
-      <input type="text" name="filter_category" value="{{ request.args.get('filter_category', '') }}" placeholder="Enter category">
-    </label>
-    <button type="submit">Filter</button>
-    <a href="{{ request.path }}">Reset</a>
-  </form>
+  <a href="{{ url_for('bank.bank_transactions') }}" class="asset-card">Bank Transactions</a>
+  <a href="{{ url_for('fd.fd_transactions') }}" class="asset-card">FD Transactions</a>
+  <a href="{{ url_for('equity.equity_transactions') }}" class="asset-card">Equity</a>
+  <a href="{{ url_for('mf.mf_transactions') }}" class="asset-card">Mutual Fund</a>
+  <a href="{{ url_for('pf.pf_transactions') }}" class="asset-card">PF</a>
+  <a href="{{ url_for('category_mapping.category_mapping') }}" class="asset-card">Category Mapping</a>
+
+  {% if gold_exists %}
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleGold()">Gold</a>
+  {% endif %}
+
+    {% if real_estate_exists %}
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('realEstateSection')">Real Estate</a>
+  {% endif %}
+
+  {% if cash_exists %}
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('cashSection')">Cash Investments</a>
+  {% endif %}
+
+  {% if private_equity_exists %}
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('peSection')">Private Equity</a>
+  {% endif %}
+
+  <div class="asset-card add-asset-btn-primary" onclick="openAddSheet()">Add Asset</div>
+
+</div>
+
+<button id="addBankBtn" class="add-bank-btn">Add Transaction</button>
+
+<form id="uploadCsvForm" method="POST" action="/upload_csv" enctype="multipart/form-data">
+  <input type="file" name="csv_file" id="csvFileInput" />
+  <input type="hidden" name="table_name" id="csvTableName" />
+  <button type="button" class="upload-csv-btn" onclick="triggerCsvUpload()">Upload CSV</button>
+</form>
+
+{% if gold_exists %}
+<div id="goldSection" class="inline-section">
+  <h2>Gold Investments</h2>
+  {% if gold_investments %}
+  <table>
+    <thead>
+      <tr>
+        {% for k in gold_investments[0].keys() %}
+          {% if k != 'user_id' %}
+            <th>{{ k }}</th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in gold_investments %}
+      <tr>
+        {% for k in gold_investments[0].keys() %}
+          {% if k != 'user_id' %}
+            <td>{{ row[k] }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No gold investments yet.</p>
+  {% endif %}
+</div>
 {% endif %}
 
-    <!-- Transactions Table -->
-    {% if transactions %}
-      {% if title == 'Category_Mapping' %}
-        <table>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Description</th>
-              <th>Sub_Category</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for txn in transactions %}
-            <tr>
-              <td>{{ txn['Category'] }}</td>
-              <td>{{ txn['Description'] }}</td>
-              <td>{{ txn['Sub_Category'] }}</td>
-              <td>
-                <a href="{{ url_for('category_mapping.edit_category_mapping') }}?description={{ txn['Description'] | urlencode }}" style="text-decoration: none;">
-                  <button style="background-color: #3b82f6; color: white; padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer;">
-                    Edit
-                  </button>
-                </a>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% elif title == 'FD Transactions' %}
-        <table>
-          <thead>
-            <tr>
-              <th>Portfolio Name</th>
-              <th>FD Number</th>
-              <th>Principal Amount</th>
-              <th>Start Date</th>
-              <th>Rate</th>
-              <th>Opening Balance</th>
-              <th>Current Value</th>
-              <th>Maturity Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for txn in transactions %}
-            <tr>
-              <td>{{ txn['Portfolio_name'] }}</td>
-              <td>{{ txn['FD_Number'] }}</td>
-              <td>{{ txn['Principal_amt'] }}</td>
-              <td>{{ txn['Start_date'] }}</td>
-              <td>{{ txn['Rate'] }}</td>
-              <td>{{ txn['Opening_Balance'] }}</td>
-              <td>{{ txn['Current_value'] }}</td>
-              <td>{{ txn['Maturity_date'] }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% elif title in ['Equity Transactions', 'Mutual Fund Transactions'] %}
-        <table>
-          <thead>
-            <tr>
-              <th>Company Name</th>
-              <th>ISIN Number</th>
-              <th>Transaction Date</th>
-              <th>Transaction Rate</th>
-              <th>Quantity</th>
-              <th>Transaction Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for txn in transactions %}
-            <tr>
-              <td>{{ txn['Company_name'] }}</td>
-              <td>{{ txn['ISIN_number'] }}</td>
-              <td>{{ txn['Transaction_date'] }}</td>
-              <td>{{ txn['Transaction_rate'] }}</td>
-              <td>{{ txn['Quantity'] }}</td>
-              <td>{{ txn['Transaction_type'] }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Narration</th>
-              <th>CHq_Ref_No</th>
-              <th>Value_Dt</th>
-              <th>Withdrawal_Amt</th>
-              <th>Deposit_Amt</th>
-              <th>Closing_Balance</th>
-              <th>Bank_Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for txn in transactions %}
-            <tr>
-              <td>{{ txn['DT'] }}</td>
-              <td>{{ txn['Narration'] }}</td>
-              <td>{{ txn['CHq_Ref_No'] }}</td>
-              <td>{{ txn['Value_Dt'] }}</td>
-              <td>{{ txn['Withdrawal_Amt'] }}</td>
-              <td>{{ txn['Deposit_Amt'] }}</td>
-              <td>{{ txn['Closing_Balance'] }}</td>
-              <td>{{ txn['bank_name'] }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% endif %}
-    {% endif %}
+  <!-- REAL ESTATE -->
+{% if real_estate_exists %}
+<div id="realEstateSection" class="inline-section">
+  <h2>Real Estate</h2>
+  <table>
+    <thead>
+      <tr>
+        {% for k in real_estate[0].keys() %}
+          {% if k != 'user_id' %}
+            <th>{{ k }}</th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in real_estate %}
+      <tr>
+        {% for k in real_estate[0].keys() %}
+          {% if k != 'user_id' %}
+            <td>{{ row[k] }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+    <!-- CASH -->
+{% if cash_exists %}
+<div id="cashSection" class="inline-section">
+  <h2>Cash Investments</h2>
+  <table>
+    <thead>
+      <tr>
+        {% for k in cash[0].keys() %}
+          {% if k != 'user_id' %}
+            <th>{{ k }}</th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in cash %}
+      <tr>
+        {% for k in cash[0].keys() %}
+          {% if k != 'user_id' %}
+            <td>{{ row[k] }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+    <!-- PRIVATE EQUITY -->
+{% if private_equity_exists %}
+<div id="peSection" class="inline-section">
+  <h2>Private Equity Investments</h2>
+  <table>
+    <thead>
+      <tr>
+        {% for k in private_equity[0].keys() %}
+          {% if k != 'user_id' %}
+            <th>{{ k }}</th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in private_equity %}
+      <tr>
+        {% for k in private_equity[0].keys() %}
+          {% if k != 'user_id' %}
+            <td>{{ row[k] }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div id="transactionsSection">
+  {% if transactions %}
+  <h2>{{ title }}</h2>
+  <table>
+    <thead>
+      <tr>
+        {% for k in transactions[0].keys() %}
+          {% if k != 'user_id' %}
+            <th>{{ k }}</th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in transactions %}
+      <tr>
+        {% for k in transactions[0].keys() %}
+          {% if k != 'user_id' %}
+            <td>{{ row[k] }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+<div id="addOverlay" class="add-overlay" onclick="closeAddSheet()"></div>
+
+<div id="addSheet" class="add-sheet">
+  <div class="add-sheet-header">
+    <span>Select Asset type</span>
+    <button onclick="closeAddSheet()">✕</button>
   </div>
+
+  <div class="add-item" onclick="goTo('/add_gold_transaction')">Gold</div>
+  <div class="add-item" onclick="goTo('/add_real_estate')">Real Estate</div>
+  <div class="add-item" onclick="goTo('/add/esops')">ESOPs / RSUs</div>
+  <div class="add-item" onclick="goTo('/add_private_equity')">Private Equity</div>
+  <div class="add-item" onclick="goTo('/add_cash_investment')">Cash Investments</div>
+  <div class="add-item" onclick="goTo('/add/digital-assets')">Digital Assets</div>
+</div>
+
+</main>
+
+<script>
+function toggleSection(sectionId) {
+  const allSections = document.querySelectorAll('.inline-section');
+  const tx = document.getElementById("transactionsSection");
+
+  allSections.forEach(sec => sec.style.display = "none");
+
+  const active = document.getElementById(sectionId);
+  if (active) active.style.display = "block";
+
+  if (tx) tx.style.display = "none";
+}
+
+function toggleGold() {
+  const allSections = document.querySelectorAll('.inline-section');
+  const tx = document.getElementById("transactionsSection");
+  const gold = document.getElementById("goldSection");
+
+  // Hide all sections first
+  allSections.forEach(sec => sec.style.display = "none");
+
+  // Show only gold
+  if (gold) gold.style.display = "block";
+
+  // Hide transactions table
+  if (tx) tx.style.display = "none";
+}
+
+function openAddSheet() {
+  document.getElementById('addOverlay').style.display = 'block';
+  document.getElementById('addSheet').style.bottom = '0';
+}
+
+function closeAddSheet() {
+  document.getElementById('addOverlay').style.display = 'none';
+  document.getElementById('addSheet').style.bottom = '-100%';
+}
+
+function goTo(path) {
+  window.location.href = path;
+}
+
+function triggerCsvUpload() {
+  const file = document.getElementById("csvFileInput");
+  file.click();
+  file.onchange = () => file.files.length && document.getElementById("uploadCsvForm").submit();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const path = window.location.pathname;
+  const addBtn = document.getElementById("addBankBtn");
+  const uploadForm = document.getElementById("uploadCsvForm");
+  const csvTableInput = document.getElementById("csvTableName");
+
+  const routeConfig = {
+    "/bank_transactions": { add: "/add_bank_transaction", table: "Bank Transactions" },
+    "/fd_transactions": { add: "/add_fd_transaction", table: "FD Transactions" },
+    "/equity_transactions": { add: "/add_equity_transaction", table: "Equity Transactions" },
+    "/mf_transactions": { add: "/add_mf_transaction", table: "Mutual Fund Transactions" },
+    "/pf_transactions": { add: "/add_pf_transaction", table: "PF Transactions" },
+    "/category_mapping": { add: "/add_category_mapping", table: "Category Mapping" },
+    "/gold_transactions": { add: "/add_gold_transaction", table: "Gold Investments" },
+     "/real_estate": { add: "//add_real_estate", table: "real estate" },
+      "/private_equity": { add: "//add_private_equity", table: "private equity" },
+      "/cash": { add: "//add_cash_investment", table: "cash" }
+  };
+
+  if (routeConfig[path]) {
+    addBtn.style.display = "inline-block";
+    addBtn.onclick = () => location.href = routeConfig[path].add;
+    uploadForm.style.display = "inline-block";
+    csvTableInput.value = routeConfig[path].table;
+  }
+});
+</script>
 </body>
 </html>
