@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, session
 import mysql.connector
 from mysql.connector import Error
 
@@ -33,11 +33,11 @@ def equity_transactions():
         from_date = request.args.get('from_date')
         to_date = request.args.get('to_date')
 
-        query = "SELECT * FROM equity_transactions"
-        params = []
+        query = "SELECT * FROM equity_transactions WHERE user_id = %s"
+        params = [session.get('user_id')]
 
         if from_date and to_date:
-            query += " WHERE Transaction_date BETWEEN %s AND %s"
+            query += " AND Transaction_date BETWEEN %s AND %s"
             params.extend([from_date, to_date])
 
         cursor.execute(query, params)
@@ -50,11 +50,14 @@ def equity_transactions():
             from_date=from_date,
             to_date=to_date
         )
-    except Error as e:
+    except mysql.connector.Error as e:
         return f"An error occurred: {e}"
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 
 # Route to add transaction
 @equity_bp.route('/add_equity_transaction', methods=['GET', 'POST'])
@@ -68,15 +71,16 @@ def add_equity_transaction():
             cursor.execute("""
                 INSERT INTO equity_transactions (
                     Company_name, ISIN_number, Transaction_date,
-                    Transaction_rate, Quantity, Transaction_type
-                ) VALUES (%s, %s, %s, %s, %s, %s)
+                    Transaction_rate, Quantity, Transaction_type, user_id
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (
                 form['Company_name'],
                 form['ISIN_number'],
                 form['Transaction_date'],
                 form['Transaction_rate'],
                 form['Quantity'],
-                form['Transaction_type']
+                form['Transaction_type'],
+                session.get('user_id')
             ))
 
             conn.commit()
