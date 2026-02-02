@@ -1,0 +1,28 @@
+<html>
+<h2>Gold Investments</h2>
+
+<a href="{{ url_for('gold.add_gold_transaction') }}">Add Gold Investment</a>
+
+{% if gold_investments %}
+<table>
+  <thead>
+    <tr>
+      {% for key in gold_investments[0].keys() %}
+        <th>{{ key }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for txn in gold_investments %}
+    <tr>
+      {% for value in txn.values() %}
+        <td>{{ value }}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No gold investments yet.</p>
+{% endif %}
+</html>
