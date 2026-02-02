@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, session   # 🔹 ADDED session
 import mysql.connector
 from mysql.connector import Error
 
@@ -21,11 +21,14 @@ def mf_transactions():
         from_date = request.args.get('from_date')
         to_date = request.args.get('to_date')
 
-        query = "SELECT * FROM Mutual_Fund_transactions"
-        params = []
+        # 🔹 NEW: logged in user id
+        user_id = session.get('user_id')
+
+        query = "SELECT * FROM Mutual_Fund_transactions WHERE user_id = %s"
+        params = [user_id]
 
         if from_date and to_date:
-            query += " WHERE Transaction_date BETWEEN %s AND %s"
+            query += " AND Transaction_date BETWEEN %s AND %s"
             params.extend([from_date, to_date])
 
         cursor.execute(query, params)
@@ -38,11 +41,13 @@ def mf_transactions():
             from_date=from_date,
             to_date=to_date
         )
-    except Error as e:
+    except mysql.connector.Error as e:
         return f"An error occurred: {e}"
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 fields = [
     {"label": "Company Name", "name": "Company_name", "type": "text"},
@@ -59,18 +64,23 @@ def add_mf_transaction():
         form = request.form
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
+
+        # 🔹 NEW: logged in user id
+        user_id = session.get('user_id')
+
         cursor.execute("""
             INSERT INTO Mutual_Fund_transactions (
                 Company_name, ISIN_number, Transaction_date,
-                Transaction_rate, Quantity, Transaction_type
-            ) VALUES (%s, %s, %s, %s, %s, %s)
+                Transaction_rate, Quantity, Transaction_type, user_id
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (
             form['Company_name'],
             form['ISIN_number'],
             form['Transaction_date'],
             form['Transaction_rate'],
             form['Quantity'],
-            form['Transaction_type']
+            form['Transaction_type'],
+            user_id                 
         ))
         conn.commit()
         cursor.close()
