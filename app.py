@@ -52,9 +52,13 @@ def register():
             if conn: conn.close()
     return render_template('register.html')
 
-# Route: Login
-@app.route('/', methods=['GET', 'POST'])
+# app.py
+
+# Route: Login @app.route('/', methods=['GET', 'POST'])
 def login():
+    conn = None    # Initialize conn to None
+    cursor = None  # Initialize cursor to None
+
     if request.method == 'POST':
         email = request.form['email'].lower()
         password = request.form['password']
@@ -64,17 +68,31 @@ def login():
             cursor.execute("SELECT * FROM users WHERE email=%s AND password=%s", (email, password))
             user = cursor.fetchone()
             if user:
-                session['user'] = email
-                session['user_id'] = user['id']
-                return redirect(url_for('dashboard'))
+                session['user'] = user['id'] # Make sure you're assigning a value here
+                flash('Logged in successfully!')
+                return redirect(url_for('dashboard')) # Redirect to a dashboard or home page
             else:
                 flash('Invalid email or password.')
-        except Error as e:
-            flash(f"Database error during login: {e}")
+                return redirect(url_for('login')) # Stay on login page with error
+        except mysql.connector.Error as err:
+            # Handle database errors gracefully
+            print(f"Database error: {err}")
+            flash('An error occurred during login. Please try again later.')
+            return redirect(url_for('login'))
+        except Exception as e:
+            # Catch any other unexpected errors
+            print(f"An unexpected error occurred: {e}")
+            flash('An unexpected error occurred. Please try again.')
+            return redirect(url_for('login'))
         finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
-    return render_template('login.html')
+            # Ensure resources are closed, only if they were successfully created
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    # This part handles GET requests or if the POST request didn't result in a redirect
+    return render_template('login.html') # Assuming you have a login.html template
 
 # Route: Dashboard
 @app.route('/dashboard')
@@ -244,3 +262,4 @@ app.register_blueprint(private_equity_bp)
 
 if __name__ == '__main__':
    app.run(host="0.0.0.0",port=8080)
+
