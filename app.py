@@ -52,9 +52,8 @@ def register():
             if conn: conn.close()
     return render_template('register.html')
 
-# app.py
-
-# Route: Login @app.route('/', methods=['GET', 'POST'])
+# Route: Login 
+@app.route('/', methods=['GET', 'POST'])
 def login():
     conn = None    # Initialize conn to None
     cursor = None  # Initialize cursor to None
@@ -262,4 +261,5 @@ app.register_blueprint(private_equity_bp)
 
 if __name__ == '__main__':
    app.run(host="0.0.0.0",port=8080)
+
 
