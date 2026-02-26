@@ -3,7 +3,7 @@ import mysql.connector
 from mysql.connector import Error
 import csv
 import io
-
+import os
 from Category_Mapping import category_mapping_bp
 from bank_transaction import bank_bp
 from fd_transactions import fd_bp
@@ -20,12 +20,19 @@ app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
 # MySQL configuration
+#db_config = {
+ #   'user': 'root',
+  #  'password': 'Anshika',
+   # 'host': '127.0.0.1',
+  #  'port': '3306',
+   # 'database': 'portfolioManagement'
+#}
+
 db_config = {
-    'user': 'root',
-    'password': 'Anshika',
-    'host': '127.0.0.1',
-    'port': '3306',
-    'database': 'portfolioManagement'
+    "user": os.environ["root"],
+    "password": os.environ["Anshika"],
+    "database": os.environ["portfolio_management"],
+    "unix_socket": f"/cloudsql/{os.environ['centering-star-482005-p8:asia-south2:portfolio-db']}"
 }
 
 # Route: Register
@@ -39,7 +46,6 @@ def register():
             cursor = conn.cursor()
             cursor.execute("INSERT INTO users (email, password) VALUES (%s, %s)", (email, password))
             conn.commit()
-            flash('Registration successful. Please login.')
             return redirect(url_for('login'))
         except mysql.connector.IntegrityError:
             flash('Email already exists.')
@@ -52,6 +58,7 @@ def register():
             if conn: conn.close()
     return render_template('register.html')
 
+# Route: Login
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -180,52 +187,85 @@ def upload_csv():
         'private equity': 'private_equity',
         'cash investments': 'cash'
     }
+
     table_name = table_map.get(table_name_raw.lower())
 
     if not file or not table_name:
-        flash(f'Missing file or invalid table selection: {table_name_raw}')
+        flash('Error uploading CSV file', 'error')
         return redirect(request.referrer)
 
     try:
-        stream = io.StringIO(file.stream.read().decode("utf-8-sig"), newline=None)
+        stream = io.StringIO(file.stream.read().decode("utf-8-sig"))
         reader = csv.DictReader(stream)
 
+        if not reader.fieldnames:
+            flash('Error uploading CSV file', 'error')
+            return redirect(request.referrer)
+
+        # Normalize CSV headers
+        csv_headers = [h.strip().lower() for h in reader.fieldnames]
+
         conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
         cursor.execute(f"SHOW COLUMNS FROM {table_name}")
-        db_columns = [col[0] for col in cursor.fetchall()]
+        columns_info = cursor.fetchall()
 
-        matching_headers = [h for h in reader.fieldnames if h in db_columns]
+        # Normalize DB columns
+        db_columns = [col['Field'].lower() for col in columns_info]
 
-        if 'user_id' in db_columns and 'user_id' not in matching_headers:
-            matching_headers.append('user_id')
+        ignored_columns = {'id', 'user_id'}
 
-        placeholders = ", ".join(["%s"] * len(matching_headers))
-        column_names = ", ".join(matching_headers)
+        # Required = non-null + no default + not ignored
+        required_columns = [
+            col['Field'].lower()
+            for col in columns_info
+            if col['Field'].lower() not in ignored_columns
+            and col['Null'] == 'NO'
+            and col['Default'] is None
+        ]
+
+        # Validation
+        if (
+            not set(required_columns).issubset(csv_headers)
+            or not set(csv_headers).issubset(set(db_columns) | ignored_columns)
+        ):
+            flash('Error uploading CSV file. Columns do not match.', 'error')
+            return redirect(request.referrer)
+
+        # Build insert columns
+        insert_columns = [h for h in reader.fieldnames if h.strip().lower() in db_columns]
+
+        if 'user_id' in db_columns:
+            insert_columns.append('user_id')
+
+        placeholders = ", ".join(["%s"] * len(insert_columns))
+        column_names = ", ".join(insert_columns)
+
         query = f"INSERT INTO {table_name} ({column_names}) VALUES ({placeholders})"
 
         for row in reader:
-            cleaned_row = []
-            for col in matching_headers:
+            values = []
+            for col in insert_columns:
                 if col == 'user_id':
-                    cleaned_row.append(session.get('user_id'))
+                    values.append(session.get('user_id'))
                 else:
-                    val = row.get(col)
-                    cleaned_row.append(val.strip() if val else None)
-            cursor.execute(query, cleaned_row)
+                    values.append(row.get(col))
+
+            cursor.execute(query, values)
 
         conn.commit()
         flash('CSV file successfully uploaded', 'success')
-        return redirect(request.referrer)
 
     except Exception as e:
         print(e)
         flash('Error uploading CSV file', 'error')
-        return redirect(request.referrer)
+
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
     return redirect(request.referrer)
 
@@ -241,8 +281,9 @@ app.register_blueprint(real_estate_bp)
 app.register_blueprint(cash_bp)
 app.register_blueprint(private_equity_bp)
 
+#if __name__ == '__main__':
+ #  app.run(host="0.0.0.0",port=8080)
 if __name__ == '__main__':
-   app.run(host="0.0.0.0",port=8080)
-
-
-
+    import os
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
