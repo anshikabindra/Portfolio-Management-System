@@ -4,16 +4,28 @@ from mysql.connector import Error
 
 mf_bp = Blueprint('mf', __name__)
 
+import os
+
+# MySQL configuration
+#db_config = {
+#   'user': 'root',
+#   'password': 'Anshika',
+#   'host': '127.0.0.1',
+#   'port': '3306',
+#   'database': 'portfolioManagement'
+#}
+
 db_config = {
-    'user': 'root',
-    'password': 'Anshika',
-    'host': '127.0.0.1',
-    'port': '3306',
-    'database': 'portfolioManagement'
+    "user": os.environ["DB_USER"],
+    "password": os.environ["DB_PASS"],
+    "database": os.environ["DB_NAME"],
+    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
 }
 
 @mf_bp.route('/mf_transactions', methods=['GET', 'POST'])
 def mf_transactions():
+    conn = None
+    cursor = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
@@ -21,7 +33,7 @@ def mf_transactions():
         from_date = request.args.get('from_date')
         to_date = request.args.get('to_date')
 
-        # 🔹 NEW: logged in user id
+        # 🔹 logged in user id
         user_id = session.get('user_id')
 
         query = "SELECT * FROM Mutual_Fund_transactions WHERE user_id = %s"
@@ -44,10 +56,11 @@ def mf_transactions():
     except mysql.connector.Error as e:
         return f"An error occurred: {e}"
     finally:
-        if cursor:
+        if cursor is not None:
             cursor.close()
-        if conn:
+        if conn is not None:
             conn.close()
+
 
 fields = [
     {"label": "Company Name", "name": "Company_name", "type": "text"},
@@ -62,29 +75,39 @@ fields = [
 def add_mf_transaction():
     if request.method == 'POST':
         form = request.form
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
+        conn = None
+        cursor = None
+        try:
+            conn = mysql.connector.connect(**db_config)
+            cursor = conn.cursor()
 
-        # 🔹 NEW: logged in user id
-        user_id = session.get('user_id')
+            # 🔹 logged in user id
+            user_id = session.get('user_id')
 
-        cursor.execute("""
-            INSERT INTO Mutual_Fund_transactions (
-                Company_name, ISIN_number, Transaction_date,
-                Transaction_rate, Quantity, Transaction_type, user_id
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (
-            form['Company_name'],
-            form['ISIN_number'],
-            form['Transaction_date'],
-            form['Transaction_rate'],
-            form['Quantity'],
-            form['Transaction_type'],
-            user_id                 
-        ))
-        conn.commit()
-        cursor.close()
-        conn.close()
+            cursor.execute("""
+                INSERT INTO Mutual_Fund_transactions (
+                    Company_name, ISIN_number, Transaction_date,
+                    Transaction_rate, Quantity, Transaction_type, user_id
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (
+                form['Company_name'],
+                form['ISIN_number'],
+                form['Transaction_date'],
+                form['Transaction_rate'],
+                form['Quantity'],
+                form['Transaction_type'],
+                user_id
+            ))
+
+            conn.commit()
+        except Error as e:
+            return f"An error occurred while inserting: {e}"
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if conn is not None:
+                conn.close()
+
         return redirect(url_for('mf.mf_transactions'))
 
     return render_template(
