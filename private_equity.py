@@ -4,12 +4,23 @@ from mysql.connector import Error
 
 private_equity_bp = Blueprint('private_equity', __name__)
 
+import os
+
+# MySQL configuration
+#db_config = {
+ #   'user': 'root',
+  #  'password': 'Anshika',
+   # 'host': '127.0.0.1',
+  #  'port': '3306',
+   # 'database': 'portfolioManagement'
+#}
+
+
 db_config = {
-    'user': 'root',
-    'password': 'Anshika',
-    'host': '127.0.0.1',
-    'port': '3306',
-    'database': 'portfolioManagement'
+    "user": os.environ["DB_USER"],
+    "password": os.environ["DB_PASS"],
+    "database": os.environ["DB_NAME"],
+    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
 }
 
 fields = [

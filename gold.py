@@ -4,12 +4,22 @@ from mysql.connector import Error
 
 gold_bp = Blueprint('gold', __name__)
 
+import os
+
+# MySQL configuration
+#db_config = {
+#   'user': 'root',
+#   'password': 'Anshika',
+#   'host': '127.0.0.1',
+#   'port': '3306',
+#   'database': 'portfolioManagement'
+#}
+
 db_config = {
-    'user': 'root',
-    'password': 'Anshika',
-    'host': '127.0.0.1',
-    'port': '3306',
-    'database': 'portfolioManagement'
+    "user": os.environ["DB_USER"],
+    "password": os.environ["DB_PASS"],
+    "database": os.environ["DB_NAME"],
+    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
 }
 
 fields = [
@@ -21,29 +31,35 @@ fields = [
 
 @gold_bp.route('/gold_transactions', methods=['GET'])
 def gold_transactions():
+    conn = None
+    cursor = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
 
-        # 🔹 NEW: filter by logged-in user
+        # 🔹 filter by logged-in user
         user_id = session.get('user_id')
 
         cursor.execute("SELECT * FROM gold_investments WHERE user_id = %s", (user_id,))
         transactions = cursor.fetchall()
     finally:
-        cursor.close()
-        conn.close()
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
 
     return render_template('dashboard.html', transactions=transactions, title='Gold Investments')
+
 
 @gold_bp.route('/add_gold_transaction', methods=['GET', 'POST'])
 def add_gold_transaction():
     if request.method == 'POST':
         form = request.form
+        conn = None
+        cursor = None
         try:
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
-
 
             user_id = session.get('user_id')
 
@@ -61,8 +77,10 @@ def add_gold_transaction():
         except Error as e:
             return f"An error occurred while inserting: {e}"
         finally:
-            cursor.close()
-            conn.close()
+            if cursor is not None:
+                cursor.close()
+            if conn is not None:
+                conn.close()
 
         return redirect(url_for('gold.gold_transactions'))
 
