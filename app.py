@@ -28,11 +28,13 @@ app.secret_key = 'supersecretkey'
    # 'database': 'portfolioManagement'
 #}
 
+import os
+
 db_config = {
-    "user": os.environ["root"],
-    "password": os.environ["Anshika"],
-    "database": os.environ["portfolio_management"],
-    "unix_socket": f"/cloudsql/{os.environ['centering-star-482005-p8:asia-south2:portfolio-db']}"
+    "user": os.environ["DB_USER"],
+    "password": os.environ["DB_PASS"],
+    "database": os.environ["DB_NAME"],
+    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
 }
 
 # Route: Register
@@ -287,5 +289,6 @@ if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+
 
 
