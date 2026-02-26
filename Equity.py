@@ -4,13 +4,22 @@ from mysql.connector import Error
 
 equity_bp = Blueprint('equity', __name__)
 
-# Database config
+import os
+
+# MySQL configuration
+#db_config = {
+#   'user': 'root',
+#   'password': 'Anshika',
+#   'host': '127.0.0.1',
+#   'port': '3306',
+#   'database': 'portfolioManagement'
+#}
+
 db_config = {
-    'user': 'root',
-    'password': 'Anshika',
-    'host': '127.0.0.1',
-    'port': '3306',
-    'database': 'portfolioManagement'
+    "user": os.environ["DB_USER"],
+    "password": os.environ["DB_PASS"],
+    "database": os.environ["DB_NAME"],
+    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
 }
 
 # Form fields for equity_transactions table
@@ -26,6 +35,8 @@ fields = [
 # Route to view transactions
 @equity_bp.route('/equity_transactions', methods=['GET', 'POST'])
 def equity_transactions():
+    conn = None
+    cursor = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
@@ -53,9 +64,9 @@ def equity_transactions():
     except mysql.connector.Error as e:
         return f"An error occurred: {e}"
     finally:
-        if cursor:
+        if cursor is not None:
             cursor.close()
-        if conn:
+        if conn is not None:
             conn.close()
 
 
@@ -64,6 +75,8 @@ def equity_transactions():
 def add_equity_transaction():
     if request.method == 'POST':
         form = request.form
+        conn = None
+        cursor = None
         try:
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
@@ -87,8 +100,10 @@ def add_equity_transaction():
         except Error as e:
             return f"An error occurred: {e}"
         finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
+            if cursor is not None:
+                cursor.close()
+            if conn is not None:
+                conn.close()
 
         return redirect(url_for('equity.equity_transactions'))
 
