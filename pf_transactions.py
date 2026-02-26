@@ -4,16 +4,28 @@ from mysql.connector import Error
 
 pf_bp = Blueprint('pf', __name__)
 
+import os
+
+# MySQL configuration
+#db_config = {
+#   'user': 'root',
+#   'password': 'Anshika',
+#   'host': '127.0.0.1',
+#   'port': '3306',
+#   'database': 'portfolioManagement'
+#}
+
 db_config = {
-    'user': 'root',
-    'password': 'Anshika',
-    'host': '127.0.0.1',
-    'port': '3306',
-    'database': 'portfolioManagement'
+    "user": os.environ["DB_USER"],
+    "password": os.environ["DB_PASS"],
+    "database": os.environ["DB_NAME"],
+    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
 }
 
 @pf_bp.route('/pf_transactions', methods=['GET', 'POST'])
 def pf_transactions():
+    conn = None
+    cursor = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
@@ -21,7 +33,7 @@ def pf_transactions():
         from_date = request.args.get('from_date')
         to_date = request.args.get('to_date')
 
-        # 🔹 NEW: logged in user id
+        # 🔹 logged in user id
         user_id = session.get('user_id')
 
         query = "SELECT * FROM pf WHERE user_id = %s"
@@ -40,15 +52,15 @@ def pf_transactions():
             title='PF Transactions',
             from_date=from_date,
             to_date=to_date
-
         )
     except mysql.connector.Error as e:
         return f"An error occurred: {e}"
     finally:
-        if cursor:
+        if cursor is not None:
             cursor.close()
-        if conn:
+        if conn is not None:
             conn.close()
+
 
 fields = [
     {"label": "Date", "name": "DT", "type": "date"},
@@ -64,11 +76,13 @@ fields = [
 def add_pf_transaction():
     if request.method == 'POST':
         form = request.form
+        conn = None
+        cursor = None
         try:
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
 
-            # 🔹 NEW: logged in user id
+            # 🔹 logged in user id
             user_id = session.get('user_id')
 
             # Parse safely
@@ -91,8 +105,10 @@ def add_pf_transaction():
         except Error as e:
             return f"An error occurred while inserting: {e}"
         finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
+            if cursor is not None:
+                cursor.close()
+            if conn is not None:
+                conn.close()
 
         return redirect(url_for('pf.pf_transactions'))
 
