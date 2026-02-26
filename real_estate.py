@@ -4,12 +4,22 @@ from mysql.connector import Error
 
 real_estate_bp = Blueprint('real_estate', __name__)
 
+import os
+
+# MySQL configuration
+#db_config = {
+#   'user': 'root',
+#   'password': 'Anshika',
+#   'host': '127.0.0.1',
+#   'port': '3306',
+#   'database': 'portfolioManagement'
+#}
+
 db_config = {
-    'user': 'root',
-    'password': 'Anshika',
-    'host': '127.0.0.1',
-    'port': '3306',
-    'database': 'portfolioManagement'
+    "user": os.environ["DB_USER"],
+    "password": os.environ["DB_PASS"],
+    "database": os.environ["DB_NAME"],
+    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
 }
 
 fields = [
@@ -21,8 +31,10 @@ fields = [
 
 @real_estate_bp.route('/real_estate', methods=['GET', 'POST'])
 def real_estate():
+    conn = None
+    cursor = None
     try:
-        # ✅ SAFETY CHECK (does not change functionality)
+        # ✅ SAFETY CHECK (unchanged)
         if 'user_id' not in session:
             return render_template(
                 'dashboard.html',
@@ -45,9 +57,9 @@ def real_estate():
     except Error as e:
         return f"An error occurred: {e}"
     finally:
-        if cursor:
+        if cursor is not None:
             cursor.close()
-        if conn:
+        if conn is not None:
             conn.close()
 
 
@@ -55,6 +67,8 @@ def real_estate():
 def add_real_estate():
     if request.method == 'POST':
         form = request.form
+        conn = None
+        cursor = None
         try:
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
@@ -76,9 +90,9 @@ def add_real_estate():
         except Error as e:
             return f"An error occurred: {e}"
         finally:
-            if cursor:
+            if cursor is not None:
                 cursor.close()
-            if conn:
+            if conn is not None:
                 conn.close()
 
         return redirect(url_for('real_estate.real_estate'))
