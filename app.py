@@ -31,7 +31,7 @@ app.secret_key = 'supersecretkey'
 db_config = {
     "user": os.environ["root"],
     "password": os.environ["Anshika"],
-    "database": os.environ["portfoliomanagement"],
+    "database": os.environ["portfolio_management"],
     "unix_socket": f"/cloudsql/{os.environ['centering-star-482005-p8:asia-south2:portfolio-db']}"
 }
 
@@ -287,4 +287,5 @@ if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+
 
