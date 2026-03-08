@@ -82,7 +82,7 @@ def add_category_mapping():
             cursor = conn.cursor()
 
             cursor.execute("""
-                INSERT INTO Category_Mapping
+                INSERT INTO category_mapping
                 (Category, Description, Sub_Category, user_id)
                 VALUES (%s, %s, %s, %s)
             """, (
@@ -133,7 +133,7 @@ def edit_category_mapping():
             cursor = conn.cursor()
 
             cursor.execute("""
-                UPDATE Category_Mapping
+                UPDATE category_mapping
                 SET Category=%s, Sub_Category=%s
                 WHERE Description=%s AND user_id=%s
             """, (
@@ -169,7 +169,7 @@ def edit_category_mapping():
 
         cursor.execute("""
             SELECT Category, Description, Sub_Category
-            FROM Category_Mapping
+            FROM category_mapping
             WHERE Description=%s AND user_id=%s
         """, (description, user_id))
 
@@ -194,3 +194,4 @@ def edit_category_mapping():
         title='Edit Category Mapping',
         back_url='category_mapping.category_mapping'
     )
+
