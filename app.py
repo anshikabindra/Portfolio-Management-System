@@ -183,7 +183,7 @@ def upload_csv():
         'equity transactions': 'equity_transactions',
         'mutual fund transactions': 'mutual_fund_transactions',
         'pf transactions': 'pf',
-        'category mapping': 'Category_Mapping',
+        'category mapping': 'category_mapping',
         'gold investments': 'gold_investments',
         'real estate': 'real_estate',
         'private equity': 'private_equity',
@@ -289,6 +289,7 @@ if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
