@@ -4,23 +4,23 @@ from mysql.connector import Error
 
 real_estate_bp = Blueprint('real_estate', __name__)
 
-import os
-
 # MySQL configuration
-#db_config = {
-#   'user': 'root',
-#   'password': 'Anshika',
-#   'host': '127.0.0.1',
-#   'port': '3306',
-#   'database': 'portfolioManagement'
-#}
-
 db_config = {
-    "user": os.environ["DB_USER"],
-    "password": os.environ["DB_PASS"],
-    "database": os.environ["DB_NAME"],
-    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+   'user': 'root',
+    'password': 'Anshika',
+    'host': '127.0.0.1',
+    'port': '3306',
+    'database': 'portfolioManagement'
 }
+
+#import os
+
+#db_config = {
+ #   "user": os.environ["DB_USER"],
+   # "password": os.environ["DB_PASS"],
+   # "database": os.environ["DB_NAME"],
+   # "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+#}
 
 fields = [
     {"label": "Investment Name", "name": "Investment_name", "type": "text"},
@@ -96,10 +96,11 @@ def add_real_estate():
                 conn.close()
 
         return redirect(url_for('real_estate.real_estate'))
-
     return render_template(
         'add_transaction.html',
         title='Add Real Estate',
         fields=fields,
-        back_url='real_estate.real_estate'
+        back_url='real_estate.real_estate',
+        submit_label='Add Real Estate',
+        transaction=None
     )
