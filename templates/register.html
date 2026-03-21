@@ -1,86 +1,229 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f7f9fc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .container {
-            background: #ffffff;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 350px;
-        }
+<!-- App-like support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PortfolioHub">
+<link rel="manifest" href="/static/manifest.json">
 
-        h2 {
-            text-align: center;
-            margin-bottom: 24px;
-            color: #333;
-        }
+<title>PortfolioHub Register</title>
 
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 20px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
+<style>
+*{
+    box-sizing:border-box;
+}
 
-        input[type="submit"] {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            font-size: 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0047ab;
+    padding:20px;
+}
 
-        input[type="submit"]:hover {
-            background-color: #0056b3;
-        }
+/* Main card */
+.register-wrapper{
+    width:850px;
+    max-width:100%; /* 🔥 responsive fix */
+    background:white;
+    border-radius:20px;
+    overflow:hidden;
+    display:flex;
+    box-shadow:0 15px 35px rgba(0,0,0,0.2);
+}
 
-        p {
-            text-align: center;
-            margin-top: 20px;
-        }
+/* Left panel */
+.welcome-panel{
+    flex:1;
+    background:linear-gradient(135deg,#0f5ac1,#0047ab);
+    color:white;
+    padding:50px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
 
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:40px;
+}
 
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+.welcome-panel h1{
+    font-size:34px;
+    margin:0 0 10px 0;
+}
+
+.welcome-panel p{
+    opacity:0.9;
+}
+
+/* Right panel */
+.register-panel{
+    flex:1;
+    padding:50px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.register-panel h2{
+    margin-bottom:25px;
+    color:#333;
+}
+
+/* Inputs */
+label{
+    font-size:14px;
+    color:#555;
+}
+
+input{
+    width:100%;
+    padding:12px 0;
+    margin-bottom:20px;
+    border:none;
+    border-bottom:2px solid #ddd;
+    outline:none;
+    font-size:16px; /* prevents zoom on iPhone */
+}
+
+input:focus{
+    border-bottom:2px solid #0047ab;
+}
+
+/* Button */
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:30px;
+    background:#FFD700;
+    color:#0047ab;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+button:hover{
+    background:#f5c400;
+}
+
+/* Login link */
+.login-link{
+    margin-top:20px;
+    text-align:center;
+}
+
+.login-link a{
+    color:#0047ab;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+/* Error */
+.error-message{
+    margin-top:15px;
+    background:#ffe5e5;
+    color:#b00020;
+    padding:8px;
+    border-radius:6px;
+    text-align:center;
+    font-size:14px;
+}
+
+/* 🔥 MOBILE VERSION */
+@media (max-width: 768px){
+
+    .register-wrapper{
+        flex-direction: column;
+        border-radius:16px;
+    }
+
+    .welcome-panel{
+        padding:25px;
+        text-align:center;
+    }
+
+    .welcome-panel h1{
+        font-size:26px;
+    }
+
+    .welcome-panel p{
+        font-size:14px;
+    }
+
+    .register-panel{
+        padding:25px;
+    }
+
+    .logo{
+        margin-bottom:15px;
+    }
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <h2>Register</h2>
-        <form method="post">
-            <label for="email">Email</label>
-            <input type="email" name="email" required>
 
-            <label for="password">Password</label>
-            <input type="password" name="password" required>
+<div class="register-wrapper">
 
-            <input type="submit" value="Register">
-        </form>
-        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+    <!-- Left -->
+    <div class="welcome-panel">
+
+        <div class="logo">PortfolioHub</div>
+
+        <h1>Create Account</h1>
+
+        <p>Register to start tracking your investments, assets, and financial portfolio in one place.</p>
+
     </div>
+
+    <!-- Right -->
+    <div class="register-panel">
+
+        <h2>Register</h2>
+
+        <form method="POST">
+
+            <label>Email</label>
+            <input type="email" name="email" placeholder="your.email@example.com" required>
+
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Create a password" required>
+
+            <button type="submit">Register</button>
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="error-message">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+        </form>
+
+        <div class="login-link">
+            Already have an account?
+            <a href="{{ url_for('login') }}">Login</a>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js');
+}
+</script>
+
 </body>
 </html>

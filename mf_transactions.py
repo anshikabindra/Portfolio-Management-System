@@ -4,23 +4,33 @@ from mysql.connector import Error
 
 mf_bp = Blueprint('mf', __name__)
 
-import os
 
 # MySQL configuration
 #db_config = {
-#   'user': 'root',
-#   'password': 'Anshika',
-#   'host': '127.0.0.1',
-#   'port': '3306',
-#   'database': 'portfolioManagement'
+  #  'user': 'root',
+   # 'password': 'Anshika',
+   # 'host': '127.0.0.1',
+   # 'port': '3306',
+   # 'database': 'portfolioManagement'
 #}
-
+# --- NEW AIVEN CLOUD DB CONFIG --- #
 db_config = {
-    "user": os.environ["DB_USER"],
-    "password": os.environ["DB_PASS"],
-    "database": os.environ["DB_NAME"],
-    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+    'user': 'avnadmin',
+    'password': 'AVNS_SRtc5d4cDCrezjU_70x',
+    'host': 'portfolio-db-bindraanshika-32d.i.aivencloud.com',
+    'port': '26174',
+    'database': 'defaultdb',
+    'ssl_disabled': False  # Aiven requires SSL connection
 }
+
+#import os
+
+#db_config = {
+ #   "user": os.environ["DB_USER"],
+   # "password": os.environ["DB_PASS"],
+   # "database": os.environ["DB_NAME"],
+   # "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+#}
 
 @mf_bp.route('/mf_transactions', methods=['GET', 'POST'])
 def mf_transactions():

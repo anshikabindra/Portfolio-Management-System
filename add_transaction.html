@@ -1,51 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- PWA / App-like behavior -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="PortfolioHub">
+    <link rel="manifest" href="/static/manifest.json">
+
     <title>{{ title }}</title>
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f9fafb;
             margin: 0;
-            padding: 40px;
+            padding: 20px; /* reduced for mobile */
         }
 
         h2 {
             margin-bottom: 20px;
             text-align: center;
+            font-size: 24px;
         }
 
         form {
             background-color: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             max-width: 600px;
+            width: 100%; /* responsive fix */
             margin: auto;
         }
 
         label {
             display: block;
             margin-bottom: 15px;
+            font-size: 14px;
         }
 
         input, select {
             width: 100%;
-            padding: 10px;
+            padding: 12px; /* better touch size */
             margin-top: 5px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            font-size: 16px; /* prevents zoom on iPhone */
         }
 
         button {
             background-color: #2563eb;
             color: white;
-            padding: 10px 20px;
+            padding: 14px; /* bigger for mobile */
+            width: 100%; /* full-width button */
             border: none;
             border-radius: 6px;
             cursor: pointer;
             margin-top: 20px;
+            font-size: 16px;
         }
 
         button:hover {
@@ -61,11 +75,36 @@
         .back-link a {
             text-decoration: none;
             color: #475569;
+            font-size: 14px;
+        }
+
+        /* ✅ Mobile optimization */
+        @media (max-width: 768px) {
+
+            body {
+                padding: 15px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            form {
+                padding: 20px;
+                border-radius: 8px;
+            }
+
+            label {
+                font-size: 13px;
+            }
         }
     </style>
 </head>
+
 <body>
+
     <h2>{{ title }}</h2>
+
     <form method="post">
         {% for field in fields %}
             <label>
@@ -79,11 +118,20 @@
                 >
             </label>
         {% endfor %}
+
         <button type="submit">Save Transaction</button>
     </form>
 
     <div class="back-link">
-        <a href="{{ url_for(back_url) }}">← Back to Transactions {{ title }}</a>
+        <a href="{{ url_for(back_url) }}">← Back to {{ title }}</a>
     </div>
+
+    <!-- Optional: Service Worker for app-like feel -->
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js');
+    }
+    </script>
+
 </body>
 </html>

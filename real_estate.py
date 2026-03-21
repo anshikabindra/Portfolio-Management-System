@@ -4,24 +4,33 @@ from mysql.connector import Error
 
 real_estate_bp = Blueprint('real_estate', __name__)
 
-import os
 
 # MySQL configuration
 #db_config = {
- #   'user': 'root',
-  #  'password': 'Anshika',
+  #  'user': 'root',
+   # 'password': 'Anshika',
    # 'host': '127.0.0.1',
-  #  'port': '3306',
+   # 'port': '3306',
    # 'database': 'portfolioManagement'
 #}
-
-
+# --- NEW AIVEN CLOUD DB CONFIG --- #
 db_config = {
-    "user": os.environ["DB_USER"],
-    "password": os.environ["DB_PASS"],
-    "database": os.environ["DB_NAME"],
-    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+    'user': 'avnadmin',
+    'password': 'AVNS_SRtc5d4cDCrezjU_70x',
+    'host': 'portfolio-db-bindraanshika-32d.i.aivencloud.com',
+    'port': '26174',
+    'database': 'defaultdb',
+    'ssl_disabled': False  # Aiven requires SSL connection
 }
+
+#import os
+
+#db_config = {
+ #   "user": os.environ["DB_USER"],
+   # "password": os.environ["DB_PASS"],
+   # "database": os.environ["DB_NAME"],
+   # "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+#}
 
 fields = [
     {"label": "Investment Name", "name": "Investment_name", "type": "text"},
@@ -32,8 +41,10 @@ fields = [
 
 @real_estate_bp.route('/real_estate', methods=['GET', 'POST'])
 def real_estate():
+    conn = None
+    cursor = None
     try:
-        # ✅ SAFETY CHECK (does not change functionality)
+        # ✅ SAFETY CHECK (unchanged)
         if 'user_id' not in session:
             return render_template(
                 'dashboard.html',
@@ -56,9 +67,9 @@ def real_estate():
     except Error as e:
         return f"An error occurred: {e}"
     finally:
-        if cursor:
+        if cursor is not None:
             cursor.close()
-        if conn:
+        if conn is not None:
             conn.close()
 
 
@@ -66,6 +77,8 @@ def real_estate():
 def add_real_estate():
     if request.method == 'POST':
         form = request.form
+        conn = None
+        cursor = None
         try:
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
@@ -87,16 +100,17 @@ def add_real_estate():
         except Error as e:
             return f"An error occurred: {e}"
         finally:
-            if cursor:
+            if cursor is not None:
                 cursor.close()
-            if conn:
+            if conn is not None:
                 conn.close()
 
         return redirect(url_for('real_estate.real_estate'))
-
     return render_template(
         'add_transaction.html',
         title='Add Real Estate',
         fields=fields,
-        back_url='real_estate.real_estate'
+        back_url='real_estate.real_estate',
+        submit_label='Add Real Estate',
+        transaction=None
     )

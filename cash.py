@@ -1,27 +1,36 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import mysql.connector
 from mysql.connector import Error
-
-cash_bp = Blueprint('cash', __name__)
-
 import os
+
+# Blueprint setup
+cash_bp = Blueprint('cash', __name__, url_prefix='/cash')
+
 
 # MySQL configuration
 #db_config = {
- #   'user': 'root',
-  #  'password': 'Anshika',
+  #  'user': 'root',
+   # 'password': 'Anshika',
    # 'host': '127.0.0.1',
-  #  'port': '3306',
+   # 'port': '3306',
    # 'database': 'portfolioManagement'
 #}
-
-
+# --- NEW AIVEN CLOUD DB CONFIG --- #
 db_config = {
-    "user": os.environ["DB_USER"],
-    "password": os.environ["DB_PASS"],
-    "database": os.environ["DB_NAME"],
-    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+    'user': 'avnadmin',
+    'password': 'AVNS_SRtc5d4cDCrezjU_70x',
+    'host': 'portfolio-db-bindraanshika-32d.i.aivencloud.com',
+    'port': '26174',
+    'database': 'defaultdb',
+    'ssl_disabled': False  # Aiven requires SSL connection
 }
+
+# db_config = {
+#    "user": os.environ["DB_USER"],
+#    "password": os.environ["DB_PASS"],
+#    "database": os.environ["DB_NAME"],
+#    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+# }
 
 fields = [
     {"label": "Investment Name", "name": "Investment_name", "type": "text"},
@@ -31,8 +40,13 @@ fields = [
     {"label": "Current Value Per Share", "name": "Current_value_per_share", "type": "number", "step": "0.01"}
 ]
 
-@cash_bp.route('/cash_investments', methods=['GET', 'POST'])
+@cash_bp.route('/', methods=['GET', 'POST'])
 def cash_investments():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    conn = None
+    cursor = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
@@ -46,17 +60,27 @@ def cash_investments():
             transactions=transactions,
             title='Cash Investments'
         )
+
     except Error as e:
-        return f"An error occurred: {e}"
+        flash(f"Database error: {e}", "error")
+        return redirect(url_for('dashboard'))
+
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
 
 
-@cash_bp.route('/add_cash_investment', methods=['GET', 'POST'])
+@cash_bp.route('/add', methods=['GET', 'POST'])
 def add_cash_investment():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         form = request.form
+        conn = None
+        cursor = None
         try:
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
@@ -76,11 +100,16 @@ def add_cash_investment():
             ))
 
             conn.commit()
+            flash('Cash investment added successfully!', 'success')
+
         except Error as e:
-            return f"An error occurred: {e}"
+            flash(f"Database error: {e}", "error")
+
         finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
+            if cursor is not None:
+                cursor.close()
+            if conn is not None:
+                conn.close()
 
         return redirect(url_for('cash.cash_investments'))
 

@@ -1,16 +1,36 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import mysql.connector
+from mysql.connector import Error
 import os
 
-# Cloud SQL configuration (Cloud Run compatible)
+# Blueprint setup
+category_mapping_bp = Blueprint('category_mapping', __name__, url_prefix='/category_mapping')
+
+
+# MySQL configuration
+#db_config = {
+  #  'user': 'root',
+   # 'password': 'Anshika',
+   # 'host': '127.0.0.1',
+   # 'port': '3306',
+   # 'database': 'portfolioManagement'
+#}
+# --- NEW AIVEN CLOUD DB CONFIG --- #
 db_config = {
-    "user": os.environ["DB_USER"],
-    "password": os.environ["DB_PASS"],
-    "database": os.environ["DB_NAME"],
-    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+    'user': 'avnadmin',
+    'password': 'AVNS_SRtc5d4cDCrezjU_70x',
+    'host': 'portfolio-db-bindraanshika-32d.i.aivencloud.com',
+    'port': '26174',
+    'database': 'defaultdb',
+    'ssl_disabled': False  # Aiven requires SSL connection
 }
 
-category_mapping_bp = Blueprint('category_mapping', __name__)
+# db_config = {
+#    "user": os.environ["DB_USER"],
+#    "password": os.environ["DB_PASS"],
+#    "database": os.environ["DB_NAME"],
+#    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
+# }
 
 fields = [
     {"label": "Category", "name": "Category", "type": "text"},
@@ -18,21 +38,22 @@ fields = [
     {"label": "Sub Category", "name": "Sub_Category", "type": "text"}
 ]
 
-
 # ============================
 # VIEW CATEGORY MAPPING
 # ============================
-@category_mapping_bp.route('/category_mapping', methods=['GET'])
+@category_mapping_bp.route('/', methods=['GET'])
 def category_mapping():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     conn = None
     cursor = None
-
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
 
         filter_category = request.args.get('filter_category')
-        user_id = session.get('user_id')
+        user_id = session['user_id']
 
         query = "SELECT * FROM Category_Mapping WHERE user_id = %s"
         params = [user_id]
@@ -54,8 +75,9 @@ def category_mapping():
             filter_category=filter_category
         )
 
-    except mysql.connector.Error as e:
-        return f"Database error: {e}"
+    except Error as e:
+        flash(f"Database error: {e}", "error")
+        return redirect(url_for('dashboard'))
 
     finally:
         if cursor is not None:
@@ -67,16 +89,17 @@ def category_mapping():
 # ============================
 # ADD CATEGORY MAPPING
 # ============================
-@category_mapping_bp.route('/add_category_mapping', methods=['GET', 'POST'])
+@category_mapping_bp.route('/add', methods=['GET', 'POST'])
 def add_category_mapping():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
         conn = None
         cursor = None
-
         try:
             form = request.form
-            user_id = session.get('user_id')
+            user_id = session['user_id']
 
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
@@ -93,9 +116,10 @@ def add_category_mapping():
             ))
 
             conn.commit()
+            flash('Category mapping added successfully!', 'success')
 
-        except mysql.connector.Error as e:
-            return f"Insert error: {e}"
+        except Error as e:
+            flash(f"Insert error: {e}", "error")
 
         finally:
             if cursor is not None:
@@ -116,18 +140,19 @@ def add_category_mapping():
 # ============================
 # EDIT CATEGORY MAPPING
 # ============================
-@category_mapping_bp.route('/edit_category_mapping', methods=['GET', 'POST'])
+@category_mapping_bp.route('/edit', methods=['GET', 'POST'])
 def edit_category_mapping():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
         conn = None
         cursor = None
-
         try:
             orig_description = request.form['orig_description']
             new_category = request.form['Category']
             new_sub_category = request.form['Sub_Category']
-            user_id = session.get('user_id')
+            user_id = session['user_id']
 
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
@@ -144,9 +169,10 @@ def edit_category_mapping():
             ))
 
             conn.commit()
+            flash('Category mapping updated successfully!', 'success')
 
-        except mysql.connector.Error as e:
-            return f"Update error: {e}"
+        except Error as e:
+            flash(f"Update error: {e}", "error")
 
         finally:
             if cursor is not None:
@@ -159,10 +185,9 @@ def edit_category_mapping():
     # ---------- GET REQUEST ----------
     conn = None
     cursor = None
-
     try:
         description = request.args.get('description')
-        user_id = session.get('user_id')
+        user_id = session['user_id']
 
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
@@ -176,10 +201,12 @@ def edit_category_mapping():
         transaction = cursor.fetchone()
 
         if not transaction:
-            return "Transaction not found", 404
+            flash("Transaction not found", "error")
+            return redirect(url_for('category_mapping.category_mapping'))
 
-    except mysql.connector.Error as e:
-        return f"Fetch error: {e}"
+    except Error as e:
+        flash(f"Fetch error: {e}", "error")
+        return redirect(url_for('category_mapping.category_mapping'))
 
     finally:
         if cursor is not None:

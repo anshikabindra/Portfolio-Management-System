@@ -1,50 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- App-like support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="PortfolioHub">
+    <link rel="manifest" href="/static/manifest.json">
+
     <title>{{ title }}</title>
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f9fafb;
             margin: 0;
-            padding: 40px;
+            padding: 20px; /* reduced for mobile */
         }
 
         h2 {
             margin-bottom: 20px;
             text-align: center;
+            font-size: 24px;
         }
 
         form {
             background-color: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             max-width: 600px;
+            width: 100%; /* responsive fix */
             margin: auto;
         }
 
         label {
             display: block;
             margin-bottom: 15px;
+            font-weight: 500;
+            font-size: 14px;
         }
 
         input, select {
             width: 100%;
-            padding: 10px;
+            padding: 12px; /* better touch */
             margin-top: 5px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            font-size: 16px; /* prevents iPhone zoom */
         }
 
         button {
             background-color: #2563eb;
             color: white;
-            padding: 10px 20px;
+            padding: 14px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             margin-top: 20px;
+            width: 100%;
+            font-size: 16px;
         }
 
         button:hover {
@@ -53,40 +68,81 @@
 
         .back-link {
             display: block;
-            margin-top: 15px;
+            margin-top: 20px;
             text-align: center;
         }
 
         .back-link a {
             text-decoration: none;
             color: #475569;
+            font-size: 14px;
+        }
+
+        /* 🔥 Mobile optimization */
+        @media (max-width: 768px) {
+
+            body {
+                padding: 15px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            form {
+                padding: 20px;
+                border-radius: 8px;
+            }
+
+            label {
+                font-size: 13px;
+            }
         }
     </style>
+
 </head>
+
 <body>
-    <h2>{{ title }}</h2>
-    <form method="post">
-        {% for field in fields %}
-            <label>
-                {{ field.label }}
-                <input
-                    type="{{ field.type }}"
-                    name="{{ field.name }}"
-                    value="{{ transaction[field.name] }}"
-                    {% if field.step %}step="{{ field.step }}"{% endif %}
-                    required
-                >
-            </label>
-        {% endfor %}
 
-        <!-- Hidden field for the unique key -->
+<h2>{{ title }}</h2>
+
+<form method="post">
+
+    {% for field in fields %}
+        <label>
+            {{ field.label }}
+
+            <input
+                type="{{ field.type }}"
+                name="{{ field.name }}"
+                value="{{ transaction[field.name] if transaction else '' }}"
+                {% if field.step %}step="{{ field.step }}"{% endif %}
+                required
+            >
+        </label>
+    {% endfor %}
+
+    <!-- Hidden field only used when editing -->
+    {% if transaction and transaction.get('Description') %}
         <input type="hidden" name="orig_description" value="{{ transaction['Description'] }}">
+    {% endif %}
 
-        <button type="submit">Update Transaction</button>
-    </form>
+    <button type="submit">
+        {{ submit_label if submit_label else "Submit Transaction" }}
+    </button>
 
-    <div class="back-link">
-        <a href="{{ url_for(back_url) }}">← Back to {{ title }}</a>
-    </div>
+</form>
+
+<div class="back-link">
+    <a href="{{ url_for(back_url) }}">← Back to {{ title }}</a>
+</div>
+
+<!-- Service worker for app feel -->
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js');
+}
+</script>
+
 </body>
 </html>

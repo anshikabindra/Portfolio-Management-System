@@ -210,15 +210,15 @@
   {% endif %}
 
     {% if real_estate_exists %}
-  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('realEstateSection')">Real Estate</a>
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('realEstateSection','real_estate')">Real Estate</a>
   {% endif %}
 
   {% if cash_exists %}
-  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('cashSection')">Cash Investments</a>
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('cashSection','cash')">Cash Investments</a>
   {% endif %}
 
   {% if private_equity_exists %}
-  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('peSection')">Private Equity</a>
+  <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('peSection','private_equity')">Private Equity</a>
   {% endif %}
 
   <div class="asset-card add-asset-btn-primary" onclick="openAddSheet()">Add Asset</div>
@@ -397,7 +397,8 @@
 </main>
 
 <script>
-function toggleSection(sectionId) {
+function toggleSection(sectionId, asset) {
+
   const allSections = document.querySelectorAll('.inline-section');
   const tx = document.getElementById("transactionsSection");
 
@@ -407,21 +408,44 @@ function toggleSection(sectionId) {
   if (active) active.style.display = "block";
 
   if (tx) tx.style.display = "none";
+
+  configureButtons(asset);
 }
 
 function toggleGold() {
+
   const allSections = document.querySelectorAll('.inline-section');
   const tx = document.getElementById("transactionsSection");
-  const gold = document.getElementById("goldSection");
 
-  // Hide all sections first
   allSections.forEach(sec => sec.style.display = "none");
 
-  // Show only gold
-  if (gold) gold.style.display = "block";
+  document.getElementById("goldSection").style.display = "block";
 
-  // Hide transactions table
   if (tx) tx.style.display = "none";
+
+  configureButtons("gold");
+}
+
+function configureButtons(asset){
+
+  const addBtn = document.getElementById("addBankBtn");
+  const uploadForm = document.getElementById("uploadCsvForm");
+  const csvTableInput = document.getElementById("csvTableName");
+
+  const config = {
+    gold: { add: "/add_gold_transaction", table: "Gold Investments" },
+    real_estate: { add: "/add_real_estate", table: "real estate" },
+    private_equity: { add: "/add_private_equity", table: "private equity" },
+    cash: { add: "/add_cash_investment", table: "cash" }
+  };
+
+  if(config[asset]){
+    addBtn.style.display = "inline-block";
+    addBtn.onclick = () => location.href = config[asset].add;
+
+    uploadForm.style.display = "inline-block";
+    csvTableInput.value = config[asset].table;
+  }
 }
 
 function openAddSheet() {
@@ -450,18 +474,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const uploadForm = document.getElementById("uploadCsvForm");
   const csvTableInput = document.getElementById("csvTableName");
 
-  const routeConfig = {
-    "/bank_transactions": { add: "/add_bank_transaction", table: "Bank Transactions" },
-    "/fd_transactions": { add: "/add_fd_transaction", table: "FD Transactions" },
-    "/equity_transactions": { add: "/add_equity_transaction", table: "Equity Transactions" },
-    "/mf_transactions": { add: "/add_mf_transaction", table: "Mutual Fund Transactions" },
-    "/pf_transactions": { add: "/add_pf_transaction", table: "PF Transactions" },
-    "/category_mapping": { add: "/add_category_mapping", table: "Category Mapping" },
-    "/gold_transactions": { add: "/add_gold_transaction", table: "Gold Investments" },
-     "/real_estate": { add: "//add_real_estate", table: "real estate" },
-      "/private_equity": { add: "//add_private_equity", table: "private equity" },
-      "/cash": { add: "//add_cash_investment", table: "cash" }
-  };
+ const routeConfig = {
+  "/bank_transactions": { add: "/add_bank_transaction", table: "Bank Transactions" },
+  "/fd_transactions": { add: "/add_fd_transaction", table: "FD Transactions" },
+  "/equity_transactions": { add: "/add_equity_transaction", table: "Equity Transactions" },
+  "/mf_transactions": { add: "/add_mf_transaction", table: "Mutual Fund Transactions" },
+  "/pf_transactions": { add: "/add_pf_transaction", table: "PF Transactions" },
+  "/category_mapping": { add: "/add_category_mapping", table: "category mapping" },
+  "/gold_transactions": { add: "/add_gold_transaction", table: "Gold Investments" },
+  "/real_estate": { add: "/add_real_estate", table: "real estate" },
+  "/private_equity": { add: "/add_private_equity", table: "private equity" },
+  "/cash": { add: "/add_cash_investment", table: "cash" }
+};
 
   if (routeConfig[path]) {
     addBtn.style.display = "inline-block";

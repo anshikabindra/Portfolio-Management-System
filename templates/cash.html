@@ -1,7 +1,113 @@
+<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Cash Investments</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- App-like support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PortfolioHub">
+<link rel="manifest" href="/static/manifest.json">
+
+<title>Cash Investments</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f9fafb;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    a {
+        display: block;
+        width: fit-content;
+        margin: 0 auto 20px auto;
+        padding: 10px 15px;
+        background-color: #2563eb;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    a:hover {
+        background-color: #1d4ed8;
+    }
+
+    /* Table styling */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    th {
+        background-color: #f1f5f9;
+        font-weight: bold;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Mobile improvements */
+    @media (max-width: 768px) {
+
+        body {
+            padding: 15px;
+        }
+
+        table, thead, tbody, th, td, tr {
+            display: block;
+            width: 100%;
+        }
+
+        thead {
+            display: none; /* hide header on mobile */
+        }
+
+        tr {
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        td {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border: none;
+            border-bottom: 1px solid #eee;
+        }
+
+        td:last-child {
+            border-bottom: none;
+        }
+
+        td::before {
+            content: attr(data-label);
+            font-weight: bold;
+            color: #555;
+        }
+    }
+</style>
 </head>
 
 <body>
@@ -26,7 +132,7 @@
     <tr>
       {% for key, value in txn.items() %}
         {% if key != 'user_id' %}
-          <td>{{ value }}</td>
+          <td data-label="{{ key }}">{{ value }}</td>
         {% endif %}
       {% endfor %}
     </tr>
@@ -34,8 +140,15 @@
   </tbody>
 </table>
 {% else %}
-<p>No cash investments yet.</p>
+<p style="text-align:center;">No cash investments yet.</p>
 {% endif %}
+
+<!-- Service worker (optional for app feel) -->
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js');
+}
+</script>
 
 </body>
 </html>

@@ -1,90 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>TrustBank Login</title>
-    <style>
-        body {
-            background: #0047ab;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background: linear-gradient(to bottom right, #0f5ac1, #1565c0);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
-            width: 320px;
-            color: white;
-        }
-        .login-container h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
-            letter-spacing: 1px;
-        }
-        .login-container label {
-            display: block;
-            margin-bottom: 5px;
-            margin-top: 15px;
-        }
-        .login-container input {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            background-color: #468de3;
-            color: white;
-        }
-        .login-container input::placeholder {
-            color: #d0e2f2;
-        }
-        .login-container button {
-            margin-top: 20px;
-            width: 100%;
-            padding: 12px;
-            background-color: #FFD700;
-            color: #0047ab;
-            font-weight: bold;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .login-container .register-link {
-            margin-top: 15px;
-            text-align: center;
-        }
-        .login-container .register-link a {
-            color: #FFD700;
-            text-decoration: none;
-        }
-        .login-container .register-link a:hover {
-            text-decoration: underline;
-        }
-    </style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- App-like support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PortfolioHub">
+<link rel="manifest" href="/static/manifest.json">
+
+<title>PortfolioHub Login</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0047ab;
+    padding:20px;
+}
+
+/* Main card */
+.login-wrapper{
+    width:850px;
+    max-width:100%; /* 🔥 responsive fix */
+    background:white;
+    border-radius:20px;
+    overflow:hidden;
+    display:flex;
+    box-shadow:0 15px 35px rgba(0,0,0,0.2);
+}
+
+/* Left panel */
+.welcome-panel{
+    flex:1;
+    background:linear-gradient(135deg,#0f5ac1,#0047ab);
+    color:white;
+    padding:50px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:40px;
+}
+
+.welcome-panel h1{
+    font-size:36px;
+    margin:0 0 10px 0;
+}
+
+.welcome-panel p{
+    opacity:0.9;
+}
+
+/* Right panel */
+.login-panel{
+    flex:1;
+    padding:50px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.login-panel h2{
+    margin-bottom:25px;
+    color:#333;
+}
+
+/* Inputs */
+label{
+    font-size:14px;
+    color:#555;
+}
+
+input{
+    width:100%;
+    padding:12px 0;
+    margin-bottom:20px;
+    border:none;
+    border-bottom:2px solid #ddd;
+    outline:none;
+    font-size:16px; /* prevents zoom on iPhone */
+}
+
+input:focus{
+    border-bottom:2px solid #0047ab;
+}
+
+/* Button */
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:30px;
+    background:#FFD700;
+    color:#0047ab;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+button:hover{
+    background:#f5c400;
+}
+
+/* Error */
+.error-message{
+    margin-top:15px;
+    background:#ffe5e5;
+    color:#b00020;
+    padding:8px;
+    border-radius:6px;
+    text-align:center;
+    font-size:14px;
+}
+
+/* Register */
+.register{
+    margin-top:20px;
+    text-align:center;
+}
+
+.register a{
+    color:#0047ab;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+/* 🔥 MOBILE VERSION */
+@media (max-width: 768px){
+
+    .login-wrapper{
+        flex-direction: column;
+        border-radius:16px;
+    }
+
+    .welcome-panel{
+        padding:25px;
+        text-align:center;
+    }
+
+    .welcome-panel h1{
+        font-size:26px;
+    }
+
+    .welcome-panel p{
+        font-size:14px;
+    }
+
+    .login-panel{
+        padding:25px;
+    }
+
+    .logo{
+        margin-bottom:15px;
+    }
+}
+</style>
 </head>
+
 <body>
-    <div class="login-container">
-        <h2>Portfolio App</h2>
+
+<div class="login-wrapper">
+
+    <!-- Left -->
+    <div class="welcome-panel">
+        <div class="logo">PortfolioHub</div>
+
+        <h1>Welcome</h1>
+
+        <p>Sign in to continue accessing your investment portfolio and track your assets.</p>
+    </div>
+
+    <!-- Right -->
+    <div class="login-panel">
+
+        <h2>Sign In</h2>
+
         <form method="POST" action="/">
-            <label>Email or Username</label>
+
+            <label>Email</label>
             <input type="email" name="email" placeholder="your.email@example.com" required>
 
             <label>Password</label>
             <input type="password" name="password" placeholder="Enter your password" required>
 
-            <button type="submit">Login</button>
+            <button type="submit">Continue</button>
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="error-message">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
+            {% endwith %}
+
         </form>
 
-        <!-- ✅ Register link -->
-        <div class="register-link">
-            Don't have an account? <a href="{{ url_for('register') }}">Register</a>
+        <div class="register">
+            Don't have an account?
+            <a href="{{ url_for('register') }}">Register</a>
         </div>
+
     </div>
+
+</div>
+
+<!-- Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js');
+}
+</script>
+
 </body>
 </html>

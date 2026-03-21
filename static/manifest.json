@@ -1,0 +1,21 @@
+{
+  "name": "PortfolioHub",
+  "short_name": "Portfolio",
+  "description": "Manage your bank, equity, and asset transactions in one place.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#1e293b",
+  "icons": [
+    {
+      "src": "/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
