@@ -1,4 +1,4 @@
-# import os
+import os
 
 # db_config = {
 #    "user": os.environ["DB_USER"],
@@ -472,11 +472,13 @@ app.register_blueprint(private_equity_bp, url_prefix="/private_equity")
 
 # ---------------- RUN ---------------- #
 
-if __name__ == '__main__':
-    init_db()
-    app.run(host="0.0.0.0", port=8080)
+#if __name__ == '__main__':
+   # init_db()
+  #  app.run(host="0.0.0.0", port=8080)
 
-# if __name__ == '__main__':
-#    import os
-#    port = int(os.environ.get("PORT", 8080))
-#    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+     init_db()
+     # Dynamically get the port from Render's environment, defaulting to 10000
+     port = int(os.environ.get("PORT", 10000))
+     # host="0.0.0.0" is correct as it allows external traffic
+     app.run(host="0.0.0.0", port=port)
