@@ -108,7 +108,7 @@
     table th, table td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: left; }
     table th { background-color: #f8fafc; font-weight: 600; color: #475569; }
 
-    /* --- MOBILE STYLES --- */
+    /* --- MOBILE STYLES (What fixes your phone view) --- */
     @media (max-width: 768px) {
       body { flex-direction: column; }
 
@@ -116,11 +116,11 @@
         width: 100%;
         padding: 10px;
         display: flex;
-        overflow-x: auto;
+        overflow-x: auto; /* Makes menu scrollable sideways on mobile */
         white-space: nowrap;
       }
 
-      .sidebar h2 { display: none; }
+      .sidebar h2 { display: none; } /* Hide "Menu" title on mobile to save space */
 
       .sidebar a {
         display: inline-block;
@@ -130,8 +130,10 @@
       }
 
       .content { padding: 15px; }
+
       .header-row h1 { font-size: 20px; }
-      .add-btn { width: 100%; text-align: center; }
+
+      .add-btn { width: 100%; text-align: center; } /* Big touch buttons */
     }
   </style>
 </head>
@@ -162,7 +164,7 @@
                                    {% elif 'PF' in title %}{{ url_for('pf.add_pf_transaction') }}
                                    {% elif 'Category' in title %}{{ url_for('category_mapping.add_category_mapping') }}
                                    {% endif %}">
-          <button type="submit" class="add-btn">+ Add Transaction</button>
+          <button type="submit" class="add-btn">+ Add {{ title.split()[0] }}</button>
         </form>
 
         <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="csv-upload">
@@ -205,11 +207,7 @@
           </tbody>
         </table>
       {% else %}
-        <div style="text-align: center; padding: 60px 20px;">
-          <div style="font-size: 50px; margin-bottom: 15px;">📊</div
-          <h3 style="margin: 0; color: #475569; font-weight: 600;">No transactions yet</h3>
-          <p style="color: #64748b; margin-top: 8px;">Your financial records for <strong>{{ title }}</strong> will appear here once added.</p>
-        </div>
+        <p style="padding: 20px;">No transactions found. Click "+ Add" to begin.</p>
       {% endif %}
     </div>
   </div>
