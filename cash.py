@@ -6,7 +6,6 @@ import os
 # Blueprint setup
 cash_bp = Blueprint('cash', __name__, url_prefix='/cash')
 
-
 # MySQL configuration
 #db_config = {
   #  'user': 'root',
@@ -20,7 +19,7 @@ db_config = {
     'user': 'avnadmin',
     'password': 'AVNS_SRtc5d4cDCrezjU_70x',
     'host': 'portfolio-db-bindraanshika-32d.i.aivencloud.com',
-    'port': '26174',
+    'port': 26174, # Integer port for stability
     'database': 'defaultdb',
     'ssl_disabled': False  # Aiven requires SSL connection
 }
@@ -58,7 +57,7 @@ def cash_investments():
         return render_template(
             'dashboard.html',
             transactions=transactions,
-            title='Cash Investments'
+            title='Cash Investments' # Trigger for dashboard buttons
         )
 
     except Error as e:
