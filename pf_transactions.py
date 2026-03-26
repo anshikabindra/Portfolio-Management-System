@@ -1,39 +1,24 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session   # 🔹 ADDED session
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 import mysql.connector
 from mysql.connector import Error
 
 pf_bp = Blueprint('pf', __name__)
 
-
-# MySQL configuration
-#db_config = {
-  #  'user': 'root',
-   # 'password': 'Anshika',
-   # 'host': '127.0.0.1',
-   # 'port': '3306',
-   # 'database': 'portfolioManagement'
-#}
 # --- NEW AIVEN CLOUD DB CONFIG --- #
 db_config = {
     'user': 'avnadmin',
     'password': 'AVNS_SRtc5d4cDCrezjU_70x',
     'host': 'portfolio-db-bindraanshika-32d.i.aivencloud.com',
-    'port': '26174',
+    'port': 26174,  # Fixed: Port should be an integer
     'database': 'defaultdb',
     'ssl_disabled': False  # Aiven requires SSL connection
 }
 
-#import os
-
-#db_config = {
- #   "user": os.environ["DB_USER"],
-   # "password": os.environ["DB_PASS"],
-   # "database": os.environ["DB_NAME"],
-   # "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
-#}
-
 @pf_bp.route('/pf_transactions', methods=['GET', 'POST'])
 def pf_transactions():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     conn = None
     cursor = None
     try:
@@ -42,8 +27,6 @@ def pf_transactions():
 
         from_date = request.args.get('from_date')
         to_date = request.args.get('to_date')
-
-        # 🔹 logged in user id
         user_id = session.get('user_id')
 
         query = "SELECT * FROM pf WHERE user_id = %s"
@@ -59,12 +42,13 @@ def pf_transactions():
         return render_template(
             'dashboard.html',
             transactions=transactions,
-            title='PF Transactions',
+            title='PF Transactions', # Triggers {% elif 'PF' in title %} in dashboard
             from_date=from_date,
             to_date=to_date
         )
-    except mysql.connector.Error as e:
-        return f"An error occurred: {e}"
+    except Error as e:
+        flash(f"Database error: {e}", "error")
+        return redirect(url_for('dashboard'))
     finally:
         if cursor is not None:
             cursor.close()
@@ -84,6 +68,9 @@ fields = [
 
 @pf_bp.route('/add_pf_transaction', methods=['GET', 'POST'])
 def add_pf_transaction():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         form = request.form
         conn = None
@@ -91,18 +78,13 @@ def add_pf_transaction():
         try:
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
-
-            # 🔹 logged in user id
             user_id = session.get('user_id')
 
-            # Parse safely
             dt = form.get('DT') or None
             narration = form.get('Narration') or None
             chq_ref_no = form.get('CHq_Ref_No') or None
             value_dt = form.get('Value_Dt') or None
-
-            # Convert numeric fields
-            withdrawal = int(form.get('Withdrawal_Amt')) if form.get('Withdrawal_Amt') else 0
+            withdrawal = float(form.get('Withdrawal_Amt')) if form.get('Withdrawal_Amt') else 0.0
             deposit = float(form.get('Deposit_Amt')) if form.get('Deposit_Amt') else 0.0
             closing = float(form.get('Closing_Balance')) if form.get('Closing_Balance') else 0.0
 
@@ -112,8 +94,9 @@ def add_pf_transaction():
             """, (dt, narration, chq_ref_no, value_dt, withdrawal, deposit, closing, user_id))
 
             conn.commit()
+            flash('PF transaction added successfully!', 'success')
         except Error as e:
-            return f"An error occurred while inserting: {e}"
+            flash(f"Error inserting record: {e}", "error")
         finally:
             if cursor is not None:
                 cursor.close()
