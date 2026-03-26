@@ -1,39 +1,24 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session   # 🔹 ADDED session
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 import mysql.connector
 from mysql.connector import Error
 
 mf_bp = Blueprint('mf', __name__)
 
-
-# MySQL configuration
-#db_config = {
-  #  'user': 'root',
-   # 'password': 'Anshika',
-   # 'host': '127.0.0.1',
-   # 'port': '3306',
-   # 'database': 'portfolioManagement'
-#}
 # --- NEW AIVEN CLOUD DB CONFIG --- #
 db_config = {
     'user': 'avnadmin',
     'password': 'AVNS_SRtc5d4cDCrezjU_70x',
     'host': 'portfolio-db-bindraanshika-32d.i.aivencloud.com',
-    'port': '26174',
+    'port': 26174,
     'database': 'defaultdb',
-    'ssl_disabled': False  # Aiven requires SSL connection
+    'ssl_disabled': False
 }
-
-#import os
-
-#db_config = {
- #   "user": os.environ["DB_USER"],
-   # "password": os.environ["DB_PASS"],
-   # "database": os.environ["DB_NAME"],
-   # "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
-#}
 
 @mf_bp.route('/mf_transactions', methods=['GET', 'POST'])
 def mf_transactions():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     conn = None
     cursor = None
     try:
@@ -42,8 +27,6 @@ def mf_transactions():
 
         from_date = request.args.get('from_date')
         to_date = request.args.get('to_date')
-
-        # 🔹 logged in user id
         user_id = session.get('user_id')
 
         query = "SELECT * FROM Mutual_Fund_transactions WHERE user_id = %s"
@@ -59,18 +42,18 @@ def mf_transactions():
         return render_template(
             'dashboard.html',
             transactions=transactions,
-            title='Mutual Fund Transactions',
+            title='Mutual Fund Transactions', # Triggers {% elif 'Mutual Fund' in title %}
             from_date=from_date,
             to_date=to_date
         )
     except mysql.connector.Error as e:
-        return f"An error occurred: {e}"
+        flash(f"Database error: {e}", "error")
+        return redirect(url_for('dashboard'))
     finally:
         if cursor is not None:
             cursor.close()
         if conn is not None:
             conn.close()
-
 
 fields = [
     {"label": "Company Name", "name": "Company_name", "type": "text"},
@@ -83,6 +66,9 @@ fields = [
 
 @mf_bp.route('/add_mf_transaction', methods=['GET', 'POST'])
 def add_mf_transaction():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         form = request.form
         conn = None
@@ -90,8 +76,6 @@ def add_mf_transaction():
         try:
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor()
-
-            # 🔹 logged in user id
             user_id = session.get('user_id')
 
             cursor.execute("""
@@ -110,8 +94,9 @@ def add_mf_transaction():
             ))
 
             conn.commit()
+            flash('Mutual Fund transaction added successfully!', 'success')
         except Error as e:
-            return f"An error occurred while inserting: {e}"
+            flash(f"Error inserting record: {e}", "error")
         finally:
             if cursor is not None:
                 cursor.close()
