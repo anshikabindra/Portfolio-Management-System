@@ -6,31 +6,15 @@ import os
 # Blueprint setup
 category_mapping_bp = Blueprint('category_mapping', __name__, url_prefix='/category_mapping')
 
-
-# MySQL configuration
-#db_config = {
-  #  'user': 'root',
-   # 'password': 'Anshika',
-   # 'host': '127.0.0.1',
-   # 'port': '3306',
-   # 'database': 'portfolioManagement'
-#}
 # --- NEW AIVEN CLOUD DB CONFIG --- #
 db_config = {
     'user': 'avnadmin',
     'password': 'AVNS_SRtc5d4cDCrezjU_70x',
     'host': 'portfolio-db-bindraanshika-32d.i.aivencloud.com',
-    'port': '26174',
+    'port': 26174,
     'database': 'defaultdb',
-    'ssl_disabled': False  # Aiven requires SSL connection
+    'ssl_disabled': False
 }
-
-# db_config = {
-#    "user": os.environ["DB_USER"],
-#    "password": os.environ["DB_PASS"],
-#    "database": os.environ["DB_NAME"],
-#    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
-# }
 
 fields = [
     {"label": "Category", "name": "Category", "type": "text"},
@@ -38,9 +22,6 @@ fields = [
     {"label": "Sub Category", "name": "Sub_Category", "type": "text"}
 ]
 
-# ============================
-# VIEW CATEGORY MAPPING
-# ============================
 @category_mapping_bp.route('/', methods=['GET'])
 def category_mapping():
     if 'user_id' not in session:
@@ -71,7 +52,7 @@ def category_mapping():
         return render_template(
             'dashboard.html',
             transactions=transactions,
-            title='Category Mapping',
+            title='Category Mapping', # Trigger for dashboard buttons
             filter_category=filter_category
         )
 
@@ -85,10 +66,6 @@ def category_mapping():
         if conn is not None:
             conn.close()
 
-
-# ============================
-# ADD CATEGORY MAPPING
-# ============================
 @category_mapping_bp.route('/add', methods=['GET', 'POST'])
 def add_category_mapping():
     if 'user_id' not in session:
@@ -136,10 +113,6 @@ def add_category_mapping():
         back_url='category_mapping.category_mapping'
     )
 
-
-# ============================
-# EDIT CATEGORY MAPPING
-# ============================
 @category_mapping_bp.route('/edit', methods=['GET', 'POST'])
 def edit_category_mapping():
     if 'user_id' not in session:
@@ -182,7 +155,6 @@ def edit_category_mapping():
 
         return redirect(url_for('category_mapping.category_mapping'))
 
-    # ---------- GET REQUEST ----------
     conn = None
     cursor = None
     try:
@@ -215,8 +187,9 @@ def edit_category_mapping():
             conn.close()
 
     return render_template(
-        'edit_transaction.html',
+        'add_transaction.html', # Changed to add_transaction for consistency if using shared fields
         transaction=transaction,
+        values=transaction, # Passing values to prepopulate the form
         fields=fields,
         title='Edit Category Mapping',
         back_url='category_mapping.category_mapping'
