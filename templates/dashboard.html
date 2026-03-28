@@ -3,266 +3,228 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PortfolioHub Dashboard</title>
+  <title>PortfolioHub</title>
   <style>
     :root {
-      --bg-color: #f1f5f9;
-      --nav-color: #1e293b;
+      --sidebar-width: 240px;
+      --sidebar-bg: #1e293b;
+      --header-height: 70px;
+      --bg-color: #f8fafc;
       --accent-color: #1e40af;
       --success-color: #10b981;
-      --danger-color: #dc2626;
       --text-main: #1e293b;
-      --text-muted: #64748b;
     }
 
     body {
       margin: 0;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       background-color: var(--bg-color);
-      color: var(--text-main);
-      min-height: 100vh;
+      display: flex; /* Creates the side-by-side layout */
     }
 
-    /* --- TOP NAVIGATION --- */
-    .top-nav {
-      background-color: var(--nav-color);
-      padding: 15px 20px;
+    /* --- SIDEBAR --- */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--sidebar-bg);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
       display: flex;
-      gap: 20px;
-      overflow-x: auto;
-      white-space: nowrap;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .top-nav a {
-      color: #cbd5e1;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 5px 10px;
-      border-radius: 4px;
-    }
-
-    .top-nav a:hover {
-      color: white;
-      background-color: #334155;
-    }
-
-    /* --- MAIN CONTENT --- */
-    .container {
-      padding: 20px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 20px 0;
-    }
-
-    .header-row h1 {
-      font-size: 22px;
-      margin: 0;
-    }
-
-    .logout-btn {
-      background: var(--danger-color);
-      color: white;
-      padding: 8px 20px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    /* --- WHITE CARDS --- */
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 25px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    /* --- ACTION BUTTONS --- */
-    .add-btn {
-      padding: 12px 24px;
-      background-color: var(--success-color);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 16px;
-      margin-bottom: 20px;
-      display: block;
-      width: fit-content;
-    }
-
-    .csv-upload-form {
-      border-top: 1px solid #f1f5f9;
+      flex-direction: column;
       padding-top: 20px;
     }
 
-    .file-input-wrapper {
-      margin-bottom: 15px;
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
-    .upload-btn {
-      width: 100%;
-      padding: 14px;
-      background-color: var(--accent-color);
+    .sidebar-brand {
       color: white;
-      border: none;
-      border-radius: 8px;
+      font-weight: 800;
+      font-size: 20px;
+      padding: 0 25px 30px;
+      letter-spacing: 1px;
+    }
+
+    .sidebar a {
+      color: #94a3b8;
+      text-decoration: none;
+      padding: 12px 25px;
+      font-size: 14px;
+      transition: all 0.2s;
+      border-left: 4px solid transparent;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      color: white;
+      background: #334155;
+      border-left-color: var(--success-color);
+    }
+
+    /* --- MAIN CONTENT AREA --- */
+    .main-wrapper {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      min-height: 100vh;
+    }
+
+    /* --- TOP HEADER --- */
+    .top-header {
+      height: var(--header-height);
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .page-title {
+      font-size: 18px;
       font-weight: 600;
-      font-size: 16px;
-      cursor: pointer;
+      color: var(--text-main);
     }
 
-    /* --- TABLE STYLING --- */
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px;
-    }
-
-    th, td {
-      padding: 15px;
-      text-align: left;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    th {
+    .logout-btn {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
       font-size: 13px;
-      text-transform: uppercase;
-      color: var(--text-muted);
       font-weight: 600;
     }
 
-    /* --- EMPTY STATE MESSAGE --- */
-    .empty-message {
-      color: #333;
-      line-height: 1.6;
-      font-size: 15px;
+    /* --- CONTENT CARDS --- */
+    .content-body {
+      padding: 30px;
+      max-width: 1100px;
+      margin: 0 auto;
     }
 
-    /* --- MOBILE ADJUSTMENTS --- */
-    @media (max-width: 600px) {
-      .header-row h1 { font-size: 20px; }
-      .add-btn { width: 100%; text-align: center; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
+
+    /* Responsive: Stack sidebar on small screens */
+    @media (max-width: 768px) {
+      .sidebar { display: none; } /* You can add a hamburger menu later */
+      .main-wrapper { margin-left: 0; }
+    }
+
+    /* Rest of your existing button/table styles... */
+    .add-btn { background: var(--success-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .upload-btn { background: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; width: 100%; margin-top: 15px; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 12px; color: #64748b; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
+    td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
   </style>
 </head>
 <body>
 
-  <nav class="top-nav">
-    <a href="{{ url_for('bank.bank_transactions') }}">Bank</a>
-    <a href="{{ url_for('fd.fd_transactions') }}">FDs</a>
-    <a href="{{ url_for('equity.equity_transactions') }}">Equity</a>
+  <aside class="sidebar">
+    <div class="sidebar-brand">PortfolioHub</div>
+    <a href="{{ url_for('bank.bank_transactions') }}">Bank Accounts</a>
+    <a href="{{ url_for('fd.fd_transactions') }}">Fixed Deposits</a>
+    <a href="{{ url_for('equity.equity_transactions') }}">Equities</a>
     <a href="{{ url_for('mf.mf_transactions') }}">Mutual Funds</a>
-    <a href="{{ url_for('pf.pf_transactions') }}">PF</a>
+    <a href="{{ url_for('pf.pf_transactions') }}">Provident Fund</a>
     <a href="{{ url_for('gold.gold_transactions') }}">Gold</a>
-    <a href="{{ url_for('cash.cash_investments') }}">Cash</a>
+    <a href="{{ url_for('cash.cash_investments') }}">Cash Assets</a>
     <a href="{{ url_for('private_equity.private_equity') }}">Private Equity</a>
     <a href="{{ url_for('real_estate.real_estate') }}">Real Estate</a>
     <a href="{{ url_for('category_mapping.category_mapping') }}">Mapping</a>
-  </nav>
+  </aside>
 
-  <div class="container">
-    <div class="header-row">
-      <h1>{{ title if title else 'Dashboard' }}</h1>
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="page-title">{{ title if title else 'Welcome back!' }}</div>
       <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
-    </div>
+    </header>
 
-    {% if title %}
-      <div class="card">
-        <form method="get" action="{% if 'Bank' in title %}{{ url_for('bank.add_bank_transaction') }}
-                                   {% elif 'FD' in title %}{{ url_for('fd.add_fd_transaction') }}
-                                   {% elif 'Equity' in title and 'Private' not in title %}{{ url_for('equity.add_equity_transaction') }}
-                                   {% elif 'Mutual Fund' in title %}{{ url_for('mf.add_mf_transaction') }}
-                                   {% elif 'PF' in title %}{{ url_for('pf.add_pf_transaction') }}
-                                   {% elif 'Gold' in title %}{{ url_for('gold.add_gold_transaction') }}
-                                   {% elif 'Cash' in title %}{{ url_for('cash.add_cash_investment') }}
-                                   {% elif 'Private Equity' in title %}{{ url_for('private_equity.add_private_equity') }}
-                                   {% elif 'Real Estate' in title %}{{ url_for('real_estate.add_real_estate') }}
-                                   {% elif 'Category' in title %}{{ url_for('category_mapping.add_category_mapping') }}
-                                   {% endif %}">
-          <button type="submit" class="add-btn">+ Add Transaction</button>
-        </form>
+    <main class="content-body">
+      {% if title %}
+        <div class="card">
+          <form method="get" action="{% if 'Bank' in title %}{{ url_for('bank.add_bank_transaction') }}
+                                     {% elif 'FD' in title %}{{ url_for('fd.add_fd_transaction') }}
+                                     {% elif 'Equity' in title and 'Private' not in title %}{{ url_for('equity.add_equity_transaction') }}
+                                     {% elif 'Mutual Fund' in title %}{{ url_for('mf.add_mf_transaction') }}
+                                     {% elif 'PF' in title %}{{ url_for('pf.add_pf_transaction') }}
+                                     {% elif 'Gold' in title %}{{ url_for('gold.add_gold_transaction') }}
+                                     {% elif 'Cash' in title %}{{ url_for('cash.add_cash_investment') }}
+                                     {% elif 'Private Equity' in title %}{{ url_for('private_equity.add_private_equity') }}
+                                     {% elif 'Real Estate' in title %}{{ url_for('real_estate.add_real_estate') }}
+                                     {% elif 'Category' in title %}{{ url_for('category_mapping.add_category_mapping') }}
+                                     {% endif %}">
+            <button type="submit" class="add-btn">+ Add Transaction</button>
+          </form>
 
-        <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="csv-upload-form">
-          <div class="file-input-wrapper">
-             <input type="file" name="csv_file" accept=".csv" required>
-          </div>
-          <input type="hidden" name="table_name" value="{{ title }}">
-          <button type="submit" class="upload-btn">Upload CSV</button>
-        </form>
-      </div>
+          <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" style="margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+            <input type="file" name="csv_file" accept=".csv" required style="font-size: 13px;">
+            <input type="hidden" name="table_name" value="{{ title }}">
+            <button type="submit" class="upload-btn">Upload CSV</button>
+          </form>
+        </div>
 
-      <div class="card">
-        {% if transactions %}
-          <div class="table-responsive">
-            <table>
-              <thead>
-                {% if title == 'Category Mapping' %}
-                  <tr><th>Category</th><th>Description</th><th>Sub-Category</th><th>Actions</th></tr>
-                {% elif title == 'FD Transactions' %}
-                  <tr><th>Portfolio</th><th>FD No.</th><th>Principal</th><th>Rate</th><th>Maturity</th></tr>
-                {% elif 'Equity' in title or 'Mutual Fund' in title %}
-                  <tr><th>Company</th><th>ISIN/Date</th><th>Rate</th><th>Qty</th><th>Type</th></tr>
-                {% elif 'Gold' in title %}
-                  <tr><th>Name</th><th>Value/Gram</th><th>Qty</th><th>Date</th></tr>
-                {% elif 'Cash' in title %}
-                  <tr><th>Name</th><th>Invested/Share</th><th>Units</th><th>Date</th><th>Current/Share</th></tr>
-                {% elif 'Real Estate' in title %}
-                  <tr><th>Name</th><th>Invested</th><th>Date</th><th>Current Value</th></tr>
-                {% else %}
-                  <tr><th>Date</th><th>Narration</th><th>Withdrawal</th><th>Deposit</th><th>Balance</th></tr>
-                {% endif %}
-              </thead>
-              <tbody>
-                {% for txn in transactions %}
-                  <tr>
-                    {% if title == 'Category Mapping' %}
-                      <td>{{ txn['Category'] }}</td><td>{{ txn['Description'] }}</td><td>{{ txn['Sub_Category'] }}</td>
-                      <td><a href="{{ url_for('category_mapping.edit_category_mapping') }}?description={{ txn['Description'] | urlencode }}">Edit</a></td>
-                    {% elif title == 'FD Transactions' %}
-                      <td>{{ txn['Portfolio_name'] }}</td><td>{{ txn['FD_Number'] }}</td><td>{{ txn['Principal_amt'] }}</td><td>{{ txn['Rate'] }}</td><td>{{ txn['Maturity_date'] }}</td>
-                    {% elif 'Equity' in title or 'Mutual Fund' in title %}
-                      <td>{{ txn['Company_name'] or txn['Investment_name'] }}</td>
-                      <td>{{ txn['Transaction_date'] or txn['Date_of_investment'] }}</td>
-                      <td>{{ txn['Transaction_rate'] or txn['Invested_value_per_share'] }}</td>
-                      <td>{{ txn['Quantity'] or txn['No_of_shares_issued'] }}</td>
-                      <td>{{ txn['Transaction_type'] or 'Invested' }}</td>
-                    {% elif 'Gold' in title %}
-                      <td>{{ txn['investment_name'] }}</td><td>{{ txn['value_per_gram'] }}</td><td>{{ txn['quantity'] }}</td><td>{{ txn['investment_date'] }}</td>
-                    {% elif 'Cash' in title %}
-                      <td>{{ txn['Investment_name'] }}</td><td>{{ txn['Invested_value_per_share'] }}</td><td>{{ txn['No_of_units'] }}</td><td>{{ txn['Date_of_investment'] }}</td><td>{{ txn['Current_value_per_share'] }}</td>
-                    {% elif 'Real Estate' in title %}
-                      <td>{{ txn['Investment_name'] }}</td><td>{{ txn['Invested_value'] }}</td><td>{{ txn['Date_of_investment'] }}</td><td>{{ txn['Current_value'] }}</td>
-                    {% else %}
-                      <td>{{ txn['DT'] }}</td><td>{{ txn['Narration'] }}</td><td>{{ txn['Withdrawal_Amt'] }}</td><td>{{ txn['Deposit_Amt'] }}</td><td>{{ txn['Closing_Balance'] }}</td>
-                    {% endif %}
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <p class="empty-message">No transactions found. Click "+ Add" to begin.</p>
-        {% endif %}
-      </div>
-    {% endif %}
+        <div class="card">
+          {% if transactions %}
+            <div style="overflow-x: auto;">
+              <table>
+                <thead>
+                  {% if title == 'Category Mapping' %}
+                    <tr><th>Category</th><th>Description</th><th>Sub-Category</th><th>Actions</th></tr>
+                  {% elif title == 'FD Transactions' %}
+                    <tr><th>Portfolio</th><th>FD No.</th><th>Principal</th><th>Rate</th><th>Maturity</th></tr>
+                  {% elif 'Equity' in title or 'Mutual Fund' in title %}
+                    <tr><th>Company</th><th>Date</th><th>Rate</th><th>Qty</th><th>Type</th></tr>
+                  {% elif 'Gold' in title %}
+                    <tr><th>Name</th><th>Value/Gram</th><th>Qty</th><th>Date</th></tr>
+                  {% elif 'Cash' in title %}
+                    <tr><th>Name</th><th>Invested/Share</th><th>Units</th><th>Date</th><th>Current/Share</th></tr>
+                  {% elif 'Real Estate' in title %}
+                    <tr><th>Name</th><th>Invested</th><th>Date</th><th>Current Value</th></tr>
+                  {% else %}
+                    <tr><th>Date</th><th>Narration</th><th>Withdrawal</th><th>Deposit</th><th>Balance</th></tr>
+                  {% endif %}
+                </thead>
+                <tbody>
+                  {% for txn in transactions %}
+                    <tr>
+                      {% if title == 'Category Mapping' %}
+                        <td>{{ txn['Category'] }}</td><td>{{ txn['Description'] }}</td><td>{{ txn['Sub_Category'] }}</td>
+                        <td><a href="{{ url_for('category_mapping.edit_category_mapping') }}?description={{ txn['Description'] | urlencode }}">Edit</a></td>
+                      {% elif title == 'FD Transactions' %}
+                        <td>{{ txn['Portfolio_name'] }}</td><td>{{ txn['FD_number'] }}</td><td>{{ txn['Principal_amt'] }}</td><td>{{ txn['Rate'] }}</td><td>{{ txn['Maturity_date'] }}</td>
+                      {% elif 'Equity' in title or 'Mutual Fund' in title %}
+                        <td>{{ txn['Company_name'] or txn['Investment_name'] }}</td>
+                        <td>{{ txn['Transaction_date'] or txn['Date_of_investment'] }}</td>
+                        <td>{{ txn['Transaction_rate'] or txn['Invested_value_per_share'] }}</td>
+                        <td>{{ txn['Quantity'] or txn['No_of_shares_issued'] }}</td>
+                        <td>{{ txn['Transaction_type'] or 'Invested' }}</td>
+                      {% elif 'Gold' in title %}
+                        <td>{{ txn['investment_name'] }}</td><td>{{ txn['value_per_gram'] }}</td><td>{{ txn['quantity'] }}</td><td>{{ txn['investment_date'] }}</td>
+                      {% elif 'Cash' in title %}
+                        <td>{{ txn['Investment_name'] }}</td><td>{{ txn['Invested_value_per_share'] }}</td><td>{{ txn['No_of_units'] }}</td><td>{{ txn['Date_of_investment'] }}</td><td>{{ txn['Current_value_per_share'] }}</td>
+                      {% elif 'Real Estate' in title %}
+                        <td>{{ txn['Investment_name'] }}</td><td>{{ txn['Invested_value'] }}</td><td>{{ txn['Date_of_investment'] }}</td><td>{{ txn['Current_value'] }}</td>
+                      {% else %}
+                        <td>{{ txn['DT'] }}</td><td>{{ txn['Narration'] }}</td><td>{{ txn['Withdrawal_Amt'] }}</td><td>{{ txn['Deposit_Amt'] }}</td><td>{{ txn['Closing_Balance'] }}</td>
+                      {% endif %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p style="color: #64748b; font-size: 14px;">No transactions found. Click "+ Add" to begin.</p>
+          {% endif %}
+        </div>
+      {% endif %}
+    </main>
   </div>
 
 </body>
