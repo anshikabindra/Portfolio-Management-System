@@ -175,7 +175,7 @@
     <a href="{{ url_for('cash.cash_investments') }}">Cash</a>
     <a href="{{ url_for('private_equity.private_equity') }}">Private Equity</a>
     <a href="{{ url_for('real_estate.real_estate') }}">Real Estate</a>
-    <a href="{{ url_for('category_mapping.category_mapping') }}">Category Mapping</a>
+    <a href="{{ url_for('category_mapping.category_mapping') }}">Mapping</a>
   </nav>
 
   <div class="container">
@@ -217,7 +217,7 @@
                 {% if title == 'Category Mapping' %}
                   <tr><th>Category</th><th>Description</th><th>Sub-Category</th><th>Actions</th></tr>
                 {% elif title == 'FD Transactions' %}
-                  <tr><th>Portfolio</th><th>FD no.</th><th>Principal</th><th>Rate</th><th>Maturity</th></tr>
+                  <tr><th>Portfolio</th><th>FD No.</th><th>Principal</th><th>Rate</th><th>Maturity</th></tr>
                 {% elif 'Equity' in title or 'Mutual Fund' in title %}
                   <tr><th>Company</th><th>ISIN/Date</th><th>Rate</th><th>Qty</th><th>Type</th></tr>
                 {% elif 'Gold' in title %}
