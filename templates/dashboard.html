@@ -99,6 +99,7 @@
       margin-bottom: 20px;
       display: block;
       width: fit-content;
+      text-decoration: none;
     }
 
     .csv-upload-form {
@@ -180,26 +181,31 @@
 
   <div class="container">
     <div class="header-row">
-      <h1>{{ title if title else 'Dashboard' }}</h1>
+      <h1>{{ title if title else 'Welcome back!' }}</h1>
       <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
     </div>
 
-    {% if title %}
-      <div class="card">
-        <form method="get" action="{% if 'Bank' in title %}{{ url_for('bank.add_bank_transaction') }}
-                                   {% elif 'FD' in title %}{{ url_for('fd.add_fd_transaction') }}
-                                   {% elif 'Equity' in title and 'Private' not in title %}{{ url_for('equity.add_equity_transaction') }}
-                                   {% elif 'Mutual Fund' in title %}{{ url_for('mf.add_mf_transaction') }}
-                                   {% elif 'PF' in title %}{{ url_for('pf.add_pf_transaction') }}
-                                   {% elif 'Gold' in title %}{{ url_for('gold.add_gold_transaction') }}
-                                   {% elif 'Cash' in title %}{{ url_for('cash.add_cash_investment') }}
-                                   {% elif 'Private Equity' in title %}{{ url_for('private_equity.add_private_equity') }}
-                                   {% elif 'Real Estate' in title %}{{ url_for('real_estate.add_real_estate') }}
-                                   {% elif 'Category' in title %}{{ url_for('category_mapping.add_category_mapping') }}
-                                   {% endif %}">
-          <button type="submit" class="add-btn">+ Add Transaction</button>
-        </form>
+    <div class="card">
+      <form method="get" action="
+          {% if title %}
+            {% if 'Bank' in title %}{{ url_for('bank.add_bank_transaction') }}
+            {% elif 'FD' in title %}{{ url_for('fd.add_fd_transaction') }}
+            {% elif 'Equity' in title and 'Private' not in title %}{{ url_for('equity.add_equity_transaction') }}
+            {% elif 'Mutual Fund' in title %}{{ url_for('mf.add_mf_transaction') }}
+            {% elif 'PF' in title %}{{ url_for('pf.add_pf_transaction') }}
+            {% elif 'Gold' in title %}{{ url_for('gold.add_gold_transaction') }}
+            {% elif 'Cash' in title %}{{ url_for('cash.add_cash_investment') }}
+            {% elif 'Private Equity' in title %}{{ url_for('private_equity.add_private_equity') }}
+            {% elif 'Real Estate' in title %}{{ url_for('real_estate.add_real_estate') }}
+            {% elif 'Category' in title %}{{ url_for('category_mapping.add_category_mapping') }}
+            {% endif %}
+          {% else %}
+            {{ url_for('bank.add_bank_transaction') }} {# Default to Bank if on Home screen #}
+          {% endif %}">
+        <button type="submit" class="add-btn">+ Add Asset</button>
+      </form>
 
+      {% if title %}
         <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="csv-upload-form">
           <div class="file-input-wrapper">
              <input type="file" name="csv_file" accept=".csv" required>
@@ -207,8 +213,10 @@
           <input type="hidden" name="table_name" value="{{ title }}">
           <button type="submit" class="upload-btn">Upload CSV</button>
         </form>
-      </div>
+      {% endif %}
+    </div>
 
+    {% if title %}
       <div class="card">
         {% if transactions %}
           <div class="table-responsive">
@@ -219,7 +227,7 @@
                 {% elif title == 'FD Transactions' %}
                   <tr><th>Portfolio</th><th>FD no.</th><th>Principal</th><th>Rate</th><th>Maturity</th></tr>
                 {% elif 'Equity' in title or 'Mutual Fund' in title %}
-                  <tr><th>Company</th><th>ISIN/Date</th><th>Rate</th><th>Qty</th><th>Type</th></tr>
+                  <tr><th>Company</th><th>Date</th><th>Rate</th><th>Qty</th><th>Type</th></tr>
                 {% elif 'Gold' in title %}
                   <tr><th>Name</th><th>Value/Gram</th><th>Qty</th><th>Date</th></tr>
                 {% elif 'Cash' in title %}
@@ -237,7 +245,7 @@
                       <td>{{ txn['Category'] }}</td><td>{{ txn['Description'] }}</td><td>{{ txn['Sub_Category'] }}</td>
                       <td><a href="{{ url_for('category_mapping.edit_category_mapping') }}?description={{ txn['Description'] | urlencode }}">Edit</a></td>
                     {% elif title == 'FD Transactions' %}
-                      <td>{{ txn['Portfolio_name'] }}</td><td>{{ txn['FD_Number'] }}</td><td>{{ txn['Principal_amt'] }}</td><td>{{ txn['Rate'] }}</td><td>{{ txn['Maturity_date'] }}</td>
+                      <td>{{ txn['Portfolio_name'] }}</td><td>{{ txn['FD_number'] }}</td><td>{{ txn['Principal_amt'] }}</td><td>{{ txn['Rate'] }}</td><td>{{ txn['Maturity_date'] }}</td>
                     {% elif 'Equity' in title or 'Mutual Fund' in title %}
                       <td>{{ txn['Company_name'] or txn['Investment_name'] }}</td>
                       <td>{{ txn['Transaction_date'] or txn['Date_of_investment'] }}</td>
@@ -259,8 +267,12 @@
             </table>
           </div>
         {% else %}
-          <p class="empty-message">No transactions found. Click "+ Add" to begin.</p>
+          <p class="empty-message">No records found. Click "+ Add Asset" to begin.</p>
         {% endif %}
+      </div>
+    {% else %}
+      <div class="card">
+        <p class="empty-message">Welcome to PortfolioHub</p>
       </div>
     {% endif %}
   </div>
