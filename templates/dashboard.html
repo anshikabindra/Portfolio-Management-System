@@ -26,27 +26,75 @@
     /* --- TOP NAVIGATION --- */
     .top-nav {
       background-color: var(--nav-color);
-      padding: 15px 20px;
+      padding: 10px 20px;
       display: flex;
-      gap: 20px;
-      overflow-x: auto;
-      white-space: nowrap;
+      align-items: center;
+      gap: 15px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex-wrap: wrap;
     }
 
-    .top-nav a {
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .top-nav a, .dropbtn {
       color: #cbd5e1;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
-      padding: 5px 10px;
+      padding: 8px 12px;
       border-radius: 4px;
+      transition: 0.2s;
     }
 
-    .top-nav a:hover {
+    .top-nav a:hover, .dropdown:hover .dropbtn {
       color: white;
       background-color: #334155;
     }
+
+    /* --- NEW ADD ASSET DROPDOWN --- */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .add-asset-nav-btn {
+      background-color: var(--success-color) !important;
+      color: white !important;
+      font-weight: 600 !important;
+      border: none;
+      cursor: pointer;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 180px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 100;
+      border-radius: 8px;
+      margin-top: 5px;
+    }
+
+    .dropdown-content a {
+      color: var(--text-main) !important;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f1f5f9;
+      color: var(--accent-color) !important;
+    }
+
+    .dropdown:hover .dropdown-content { display: block; }
 
     /* --- MAIN CONTENT --- */
     .container {
@@ -84,22 +132,6 @@
       padding: 25px;
       margin-bottom: 20px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    /* --- ACTION BUTTONS --- */
-    .add-btn {
-      padding: 12px 24px;
-      background-color: var(--success-color);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 16px;
-      margin-bottom: 20px;
-      display: block;
-      width: fit-content;
-      text-decoration: none;
     }
 
     .csv-upload-form {
@@ -160,23 +192,37 @@
     /* --- MOBILE ADJUSTMENTS --- */
     @media (max-width: 600px) {
       .header-row h1 { font-size: 20px; }
-      .add-btn { width: 100%; text-align: center; }
     }
   </style>
 </head>
 <body>
 
   <nav class="top-nav">
-    <a href="{{ url_for('bank.bank_transactions') }}">Bank</a>
-    <a href="{{ url_for('fd.fd_transactions') }}">FDs</a>
-    <a href="{{ url_for('equity.equity_transactions') }}">Equity</a>
-    <a href="{{ url_for('mf.mf_transactions') }}">Mutual Funds</a>
-    <a href="{{ url_for('pf.pf_transactions') }}">PF</a>
-    <a href="{{ url_for('gold.gold_transactions') }}">Gold</a>
-    <a href="{{ url_for('cash.cash_investments') }}">Cash</a>
-    <a href="{{ url_for('private_equity.private_equity') }}">Private Equity</a>
-    <a href="{{ url_for('real_estate.real_estate') }}">Real Estate</a>
-    <a href="{{ url_for('category_mapping.category_mapping') }}">Mapping</a>
+    <div class="nav-links">
+      <a href="{{ url_for('bank.bank_transactions') }}">Bank</a>
+      <a href="{{ url_for('fd.fd_transactions') }}">FDs</a>
+      <a href="{{ url_for('equity.equity_transactions') }}">Equity</a>
+      <a href="{{ url_for('mf.mf_transactions') }}">Mutual Funds</a>
+      <a href="{{ url_for('pf.pf_transactions') }}">PF</a>
+      <a href="{{ url_for('category_mapping.category_mapping') }}">Mapping</a>
+
+      {% if active_assets %}
+        {% if 'Gold' in active_assets %}<a href="{{ url_for('gold.gold_transactions') }}">Gold</a>{% endif %}
+        {% if 'Cash' in active_assets %}<a href="{{ url_for('cash.cash_investments') }}">Cash</a>{% endif %}
+        {% if 'Private Equity' in active_assets %}<a href="{{ url_for('private_equity.private_equity') }}">Private Equity</a>{% endif %}
+        {% if 'Real Estate' in active_assets %}<a href="{{ url_for('real_estate.real_estate') }}">Real Estate</a>{% endif %}
+      {% endif %}
+    </div>
+
+    <div class="dropdown">
+      <button class="dropbtn add-asset-nav-btn">+ Add Asset</button>
+      <div class="dropdown-content">
+        <a href="{{ url_for('gold.add_gold_transaction') }}">Gold</a>
+        <a href="{{ url_for('private_equity.add_private_equity') }}">Private Equity</a>
+        <a href="{{ url_for('real_estate.add_real_estate') }}">Real Estate</a>
+        <a href="{{ url_for('cash.add_cash_investment') }}">Cash</a>
+      </div>
+    </div>
   </nav>
 
   <div class="container">
@@ -185,38 +231,17 @@
       <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
     </div>
 
-    <div class="card">
-      <form method="get" action="
-          {% if title %}
-            {% if 'Bank' in title %}{{ url_for('bank.add_bank_transaction') }}
-            {% elif 'FD' in title %}{{ url_for('fd.add_fd_transaction') }}
-            {% elif 'Equity' in title and 'Private' not in title %}{{ url_for('equity.add_equity_transaction') }}
-            {% elif 'Mutual Fund' in title %}{{ url_for('mf.add_mf_transaction') }}
-            {% elif 'PF' in title %}{{ url_for('pf.add_pf_transaction') }}
-            {% elif 'Gold' in title %}{{ url_for('gold.add_gold_transaction') }}
-            {% elif 'Cash' in title %}{{ url_for('cash.add_cash_investment') }}
-            {% elif 'Private Equity' in title %}{{ url_for('private_equity.add_private_equity') }}
-            {% elif 'Real Estate' in title %}{{ url_for('real_estate.add_real_estate') }}
-            {% elif 'Category' in title %}{{ url_for('category_mapping.add_category_mapping') }}
-            {% endif %}
-          {% else %}
-            {{ url_for('bank.add_bank_transaction') }} {# Default to Bank if on Home screen #}
-          {% endif %}">
-        <button type="submit" class="add-btn">+ Add Asset</button>
-      </form>
-
-      {% if title %}
-        <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="csv-upload-form">
+    {% if title %}
+      <div class="card">
+        <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="csv-upload-form" style="border-top: none; padding-top: 0;">
           <div class="file-input-wrapper">
              <input type="file" name="csv_file" accept=".csv" required>
           </div>
           <input type="hidden" name="table_name" value="{{ title }}">
           <button type="submit" class="upload-btn">Upload CSV</button>
         </form>
-      {% endif %}
-    </div>
+      </div>
 
-    {% if title %}
       <div class="card">
         {% if transactions %}
           <div class="table-responsive">
@@ -267,12 +292,12 @@
             </table>
           </div>
         {% else %}
-          <p class="empty-message">No records found. Click "+ Add Asset" to begin.</p>
+          <p class="empty-message">No records found for {{ title }}. Use "+ Add Asset" to begin.</p>
         {% endif %}
       </div>
     {% else %}
       <div class="card">
-        <p class="empty-message">Welcome to PortfolioHub</p>
+        <p class="empty-message">Welcome to PortfolioHub. Select a category from the top menu to view your data, or use the "+ Add Asset" button above to track something new.</p>
       </div>
     {% endif %}
   </div>
