@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PortfolioHub Dashboard</title>
+
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#1e293b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
   <style>
     :root {
       --bg-color: #f1f5f9;
@@ -21,6 +28,8 @@
       background-color: var(--bg-color);
       color: var(--text-main);
       min-height: 100vh;
+      /* Padding for iPhone 15 Dynamic Island */
+      padding-top: env(safe-area-inset-top);
     }
 
     /* --- TOP NAVIGATION --- */
@@ -55,7 +64,7 @@
       background-color: #334155;
     }
 
-    /* --- NEW ADD ASSET DROPDOWN --- */
+    /* --- ADD ASSET DROPDOWN --- */
     .dropdown {
       position: relative;
       display: inline-block;
@@ -226,6 +235,19 @@
   </nav>
 
   <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: 600;
+                      background-color: {{ '#d1fae5' if category == 'success' else '#fee2e2' }};
+                      color: {{ '#065f46' if category == 'success' else '#991b1b' }};
+                      border: 1px solid {{ '#10b981' if category == 'success' else '#dc2626' }};">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     <div class="header-row">
       <h1>{{ title if title else 'Welcome back!' }}</h1>
       <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
