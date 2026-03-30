@@ -309,10 +309,6 @@ def logout():
 
 @app.context_processor
 def inject_active_assets():
-    """
-    Consolidated context processor that checks for optional assets
-    and provides the 'active_assets' list and individual investment data.
-    """
     active_assets = []
     gold_investments = []
     real_estate = []
@@ -379,7 +375,7 @@ def upload_csv():
         'bank transactions': 'bank_transaction',
         'fd transactions': 'fd_transactions',
         'equity transactions': 'equity_transactions',
-        'mutual fund transactions': 'mutual_fund_transactions',
+        'mutual fund transactions': 'Mutual_Fund_transactions',
         'pf transactions': 'pf',
         'category mapping': 'Category_Mapping',
         'gold investments': 'gold_investments',
@@ -399,22 +395,40 @@ def upload_csv():
     try:
         stream = io.StringIO(file.stream.read().decode("utf-8-sig"))
         reader = csv.DictReader(stream)
+        csv_headers = [h.strip().lower() for h in reader.fieldnames] if reader.fieldnames else []
 
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
 
+        # Get Database columns
         cursor.execute(f"SHOW COLUMNS FROM {table_name}")
         columns_info = cursor.fetchall()
-
         db_columns = [col['Field'].lower() for col in columns_info]
-        insert_columns = [h for h in reader.fieldnames if h.strip().lower() in db_columns]
+        
+        # Columns that MUST be in the CSV (excluding auto-managed fields)
+        required_db_columns = [col for col in db_columns if col not in ['id', 'user_id']]
 
+        # VALIDATION: Ensure CSV headers match the required DB columns exactly
+        is_match = True
+        if len(csv_headers) != len(required_db_columns):
+            is_match = False
+        else:
+            for header in csv_headers:
+                if header not in required_db_columns:
+                    is_match = False
+                    break
+
+        if not is_match:
+            flash("File doesn't match columns", "error")
+            return redirect(request.referrer)
+
+        # Process insertion if columns match
+        insert_columns = [h for h in reader.fieldnames if h.strip().lower() in db_columns]
         if 'user_id' in db_columns:
             insert_columns.append('user_id')
 
         placeholders = ", ".join(["%s"] * len(insert_columns))
         column_names = ", ".join(insert_columns)
-
         query = f"INSERT INTO {table_name} ({column_names}) VALUES ({placeholders})"
 
         for row in reader:
@@ -425,10 +439,10 @@ def upload_csv():
             cursor.execute(query, values)
 
         conn.commit()
-        flash('CSV file successfully uploaded', 'success')
+        flash('File uploaded successfully', 'success')
 
     except Exception as e:
-        print(e)
+        print(f"CSV Upload Error: {e}")
         flash('Error uploading CSV file', 'error')
 
     finally:
