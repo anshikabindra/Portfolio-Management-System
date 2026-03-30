@@ -49,7 +49,6 @@ db_config = {
 
 
 # ---------------- DATABASE INITIALIZATION ---------------- #
-# This function creates your tables in the new cloud database if they don't exist
 def init_db():
     conn = None
     try:
@@ -306,39 +305,16 @@ def logout():
     return redirect(url_for('login'))
 
 
-# ---------------- CONTEXT PROCESSORS ---------------- #
+# ---------------- UNIFIED CONTEXT PROCESSOR ---------------- #
 
 @app.context_processor
-def inject_gold():
+def inject_active_assets():
+    """
+    Consolidated context processor that checks for optional assets
+    and provides the 'active_assets' list and individual investment data.
+    """
+    active_assets = []
     gold_investments = []
-
-    if 'user_id' in session:
-        conn = cursor = None
-        try:
-            conn = mysql.connector.connect(**db_config)
-            cursor = conn.cursor(dictionary=True)
-
-            cursor.execute(
-                "SELECT * FROM gold_investments WHERE user_id = %s",
-                (session['user_id'],)
-            )
-            gold_investments = cursor.fetchall()
-
-        except Exception:
-            gold_investments = []
-
-        finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
-
-    return dict(
-        gold_exists=len(gold_investments) > 0,
-        gold_investments=gold_investments
-    )
-
-
-@app.context_processor
-def inject_other_assets():
     real_estate = []
     cash = []
     private_equity = []
@@ -348,39 +324,44 @@ def inject_other_assets():
         try:
             conn = mysql.connector.connect(**db_config)
             cursor = conn.cursor(dictionary=True)
+            user_id = session['user_id']
 
-            cursor.execute(
-                "SELECT * FROM real_estate WHERE user_id = %s",
-                (session['user_id'],)
-            )
+            # Check Gold
+            cursor.execute("SELECT * FROM gold_investments WHERE user_id = %s", (user_id,))
+            gold_investments = cursor.fetchall()
+            if gold_investments: active_assets.append('Gold')
+
+            # Check Real Estate
+            cursor.execute("SELECT * FROM real_estate WHERE user_id = %s", (user_id,))
             real_estate = cursor.fetchall()
+            if real_estate: active_assets.append('Real Estate')
 
-            cursor.execute(
-                "SELECT * FROM cash_investments WHERE user_id = %s",
-                (session['user_id'],)
-            )
+            # Check Cash
+            cursor.execute("SELECT * FROM cash_investments WHERE user_id = %s", (user_id,))
             cash = cursor.fetchall()
+            if cash: active_assets.append('Cash')
 
-            cursor.execute(
-                "SELECT * FROM private_equity WHERE user_id = %s",
-                (session['user_id'],)
-            )
+            # Check Private Equity
+            cursor.execute("SELECT * FROM private_equity WHERE user_id = %s", (user_id,))
             private_equity = cursor.fetchall()
+            if private_equity: active_assets.append('Private Equity')
 
         except Exception:
             pass
-
         finally:
             if cursor: cursor.close()
             if conn: conn.close()
 
     return dict(
-        real_estate_exists=len(real_estate) > 0,
-        cash_exists=len(cash) > 0,
-        private_equity_exists=len(private_equity) > 0,
+        active_assets=active_assets,
+        gold_investments=gold_investments,
+        gold_exists=len(gold_investments) > 0,
         real_estate=real_estate,
+        real_estate_exists=len(real_estate) > 0,
         cash=cash,
-        private_equity=private_equity
+        cash_exists=len(cash) > 0,
+        private_equity=private_equity,
+        private_equity_exists=len(private_equity) > 0
     )
 
 
@@ -472,13 +453,7 @@ app.register_blueprint(private_equity_bp, url_prefix="/private_equity")
 
 # ---------------- RUN ---------------- #
 
-#if __name__ == '__main__':
-   # init_db()
-  #  app.run(host="0.0.0.0", port=8080)
-
 if __name__ == '__main__':
      init_db()
-     # Dynamically get the port from Render's environment, defaulting to 10000
      port = int(os.environ.get("PORT", 10000))
-     # host="0.0.0.0" is correct as it allows external traffic
      app.run(host="0.0.0.0", port=port)
