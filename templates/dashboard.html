@@ -204,7 +204,7 @@
       <a href="{{ url_for('equity.equity_transactions') }}">Equity</a>
       <a href="{{ url_for('mf.mf_transactions') }}">Mutual Funds</a>
       <a href="{{ url_for('pf.pf_transactions') }}">PF</a>
-      <a href="{{ url_for('category_mapping.category_mapping') }}">Mapping</a>
+      <a href="{{ url_for('category_mapping.category_mapping') }}">Category Mapping</a>
 
       {% if active_assets %}
         {% if 'Gold' in active_assets %}<a href="{{ url_for('gold.gold_transactions') }}">Gold</a>{% endif %}
