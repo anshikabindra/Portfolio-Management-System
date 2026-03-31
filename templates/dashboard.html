@@ -28,32 +28,31 @@
       background-color: var(--bg-color);
       color: var(--text-main);
       min-height: 100vh;
-      /* Padding for iPhone 15 Dynamic Island */
       padding-top: env(safe-area-inset-top);
     }
 
-    /* --- TOP NAVIGATION --- */
+    /* --- TOP NAVIGATION (Laptop) --- */
     .top-nav {
       background-color: var(--nav-color);
       padding: 10px 20px;
       display: flex;
       align-items: center;
-      justify-content: space-between; /* Pushes logout to the far right */
+      justify-content: space-between;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
     .nav-links-wrapper {
       display: flex;
       align-items: center;
       gap: 15px;
-      flex-wrap: wrap;
     }
 
     .nav-links {
       display: flex;
       gap: 10px;
-      flex-wrap: wrap;
     }
 
     .top-nav a, .dropbtn {
@@ -71,150 +70,73 @@
       background-color: #334155;
     }
 
-    /* --- ADD ASSET DROPDOWN --- */
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-
-    .add-asset-nav-btn {
-      background-color: var(--success-color) !important;
-      color: white !important;
-      font-weight: 600 !important;
-      border: none;
-      cursor: pointer;
-    }
-
+    /* --- DROPDOWN --- */
+    .dropdown { position: relative; display: inline-block; }
+    .add-asset-nav-btn { background-color: var(--success-color) !important; color: white !important; font-weight: 600 !important; border: none; cursor: pointer; }
     .dropdown-content {
-      display: none;
-      position: absolute;
-      background-color: white;
-      min-width: 180px;
-      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-      z-index: 100;
-      border-radius: 8px;
-      margin-top: 5px;
+      display: none; position: absolute; background-color: white; min-width: 180px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 100; border-radius: 8px; margin-top: 5px;
     }
-
-    .dropdown-content a {
-      color: var(--text-main) !important;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-      font-size: 14px;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .dropdown-content a:hover {
-      background-color: #f1f5f9;
-      color: var(--accent-color) !important;
-    }
-
+    .dropdown-content a { color: var(--text-main) !important; padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+    .dropdown-content a:hover { background-color: #f1f5f9; color: var(--accent-color) !important; }
     .dropdown:hover .dropdown-content { display: block; }
 
-    /* --- MAIN CONTENT --- */
-    .container {
-      padding: 20px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .header-row {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      margin: 20px 0;
-    }
-
-    .header-row h1 {
-      font-size: 22px;
-      margin: 0;
-    }
-
-    .logout-btn {
-      background: var(--danger-color);
-      color: white;
-      padding: 8px 20px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    /* --- WHITE CARDS --- */
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 25px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .csv-upload-form {
-      border-top: 1px solid #f1f5f9;
-      padding-top: 20px;
-    }
-
-    .file-input-wrapper {
-      margin-bottom: 15px;
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
-    .upload-btn {
-      width: 100%;
-      padding: 14px;
-      background-color: var(--accent-color);
-      color: white;
+    /* --- MOBILE SPECIFIC STYLES --- */
+    .hamburger {
+      display: none;
+      font-size: 24px;
+      background: none;
       border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 16px;
+      color: white;
       cursor: pointer;
     }
 
-    /* --- TABLE STYLING --- */
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
+    @media (max-width: 768px) {
+      .hamburger { display: block; }
+      .nav-links-wrapper {
+        display: none; /* Hide standard links on mobile */
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: -100%; /* Off-screen */
+        width: 250px;
+        height: 100vh;
+        background-color: var(--nav-color);
+        padding: 60px 20px;
+        transition: 0.3s;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+      }
+      .nav-links-wrapper.active { left: 0; display: flex; }
+      .nav-links { flex-direction: column; width: 100%; }
+      .nav-links a { font-size: 16px; padding: 15px; border-bottom: 1px solid #334155; }
+      .top-nav { justify-content: space-between; padding: 15px 20px; }
+      .logout-btn { padding: 6px 12px; font-size: 12px; }
+      
+      /* Close button for mobile menu */
+      .close-menu { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; text-decoration: none; }
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px;
-    }
-
-    th, td {
-      padding: 15px;
-      text-align: left;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    th {
-      font-size: 13px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    /* --- EMPTY STATE MESSAGE --- */
-    .empty-message {
-      color: #333;
-      line-height: 1.6;
-      font-size: 15px;
-    }
-
-    /* --- MOBILE ADJUSTMENTS --- */
-    @media (max-width: 600px) {
-      .header-row h1 { font-size: 20px; }
-    }
+    /* --- MAIN CONTENT --- */
+    .container { padding: 20px; max-width: 900px; margin: 0 auto; }
+    .header-row { margin: 20px 0; }
+    .header-row h1 { font-size: 22px; }
+    .logout-btn { background: var(--danger-color); color: white; padding: 8px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; }
+    .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
+    .upload-btn { width: 100%; padding: 14px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; }
+    .table-responsive { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th, td { padding: 15px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+    th { font-size: 13px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
   </style>
 </head>
 <body>
 
   <nav class="top-nav">
-    <div class="nav-links-wrapper">
+    <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+
+    <div class="nav-links-wrapper" id="mobileMenu">
+      <a href="javascript:void(0)" class="close-menu" onclick="toggleMobileMenu()">&times;</a>
+      
       <div class="nav-links">
         <a href="{{ url_for('bank.bank_transactions') }}">Bank</a>
         <a href="{{ url_for('fd.fd_transactions') }}">FDs</a>
@@ -265,8 +187,8 @@
 
     {% if title %}
       <div class="card">
-        <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="csv-upload-form" style="border-top: none; padding-top: 0;">
-          <div class="file-input-wrapper">
+        <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" style="border-top: none; padding-top: 0;">
+          <div style="margin-bottom: 15px; font-size: 14px; color: var(--text-muted);">
              <input type="file" name="csv_file" accept=".csv" required>
           </div>
           <input type="hidden" name="table_name" value="{{ title }}">
@@ -324,11 +246,18 @@
             </table>
           </div>
         {% else %}
-          <p class="empty-message">No records found for {{ title }}. Use "+ Add Asset" to begin.</p>
+          <p class="empty-message">No records found for {{ title }}. Use the menu to begin.</p>
         {% endif %}
       </div>
     {% endif %}
-    </div>
+  </div>
+
+  <script>
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobileMenu');
+      menu.classList.toggle('active');
+    }
+  </script>
 
 </body>
 </html>
