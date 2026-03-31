@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PortfolioHub Dashboard</title>
-
+  
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#1e293b">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -38,8 +38,15 @@
       padding: 10px 20px;
       display: flex;
       align-items: center;
-      gap: 15px;
+      justify-content: space-between; /* Pushes logout to the far right */
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex-wrap: wrap;
+    }
+
+    .nav-links-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 15px;
       flex-wrap: wrap;
     }
 
@@ -114,7 +121,7 @@
 
     .header-row {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
       margin: 20px 0;
     }
@@ -207,39 +214,43 @@
 <body>
 
   <nav class="top-nav">
-    <div class="nav-links">
-      <a href="{{ url_for('bank.bank_transactions') }}">Bank</a>
-      <a href="{{ url_for('fd.fd_transactions') }}">FDs</a>
-      <a href="{{ url_for('equity.equity_transactions') }}">Equity</a>
-      <a href="{{ url_for('mf.mf_transactions') }}">Mutual Funds</a>
-      <a href="{{ url_for('pf.pf_transactions') }}">PF</a>
-      <a href="{{ url_for('category_mapping.category_mapping') }}">Category Mapping</a>
+    <div class="nav-links-wrapper">
+      <div class="nav-links">
+        <a href="{{ url_for('bank.bank_transactions') }}">Bank</a>
+        <a href="{{ url_for('fd.fd_transactions') }}">FDs</a>
+        <a href="{{ url_for('equity.equity_transactions') }}">Equity</a>
+        <a href="{{ url_for('mf.mf_transactions') }}">Mutual Funds</a>
+        <a href="{{ url_for('pf.pf_transactions') }}">PF</a>
+        <a href="{{ url_for('category_mapping.category_mapping') }}">Category Mapping</a>
 
-      {% if active_assets %}
-        {% if 'Gold' in active_assets %}<a href="{{ url_for('gold.gold_transactions') }}">Gold</a>{% endif %}
-        {% if 'Cash' in active_assets %}<a href="{{ url_for('cash.cash_investments') }}">Cash</a>{% endif %}
-        {% if 'Private Equity' in active_assets %}<a href="{{ url_for('private_equity.private_equity') }}">Private Equity</a>{% endif %}
-        {% if 'Real Estate' in active_assets %}<a href="{{ url_for('real_estate.real_estate') }}">Real Estate</a>{% endif %}
-      {% endif %}
-    </div>
+        {% if active_assets %}
+          {% if 'Gold' in active_assets %}<a href="{{ url_for('gold.gold_transactions') }}">Gold</a>{% endif %}
+          {% if 'Cash' in active_assets %}<a href="{{ url_for('cash.cash_investments') }}">Cash</a>{% endif %}
+          {% if 'Private Equity' in active_assets %}<a href="{{ url_for('private_equity.private_equity') }}">Private Equity</a>{% endif %}
+          {% if 'Real Estate' in active_assets %}<a href="{{ url_for('real_estate.real_estate') }}">Real Estate</a>{% endif %}
+        {% endif %}
+      </div>
 
-    <div class="dropdown">
-      <button class="dropbtn add-asset-nav-btn">+ Add Asset</button>
-      <div class="dropdown-content">
-        <a href="{{ url_for('gold.add_gold_transaction') }}">Gold</a>
-        <a href="{{ url_for('private_equity.add_private_equity') }}">Private Equity</a>
-        <a href="{{ url_for('real_estate.add_real_estate') }}">Real Estate</a>
-        <a href="{{ url_for('cash.add_cash_investment') }}">Cash</a>
+      <div class="dropdown">
+        <button class="dropbtn add-asset-nav-btn">+ Add Asset</button>
+        <div class="dropdown-content">
+          <a href="{{ url_for('gold.add_gold_transaction') }}">Gold</a>
+          <a href="{{ url_for('private_equity.add_private_equity') }}">Private Equity</a>
+          <a href="{{ url_for('real_estate.add_real_estate') }}">Real Estate</a>
+          <a href="{{ url_for('cash.add_cash_investment') }}">Cash</a>
+        </div>
       </div>
     </div>
+
+    <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
   </nav>
 
   <div class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: 600;
-                      background-color: {{ '#d1fae5' if category == 'success' else '#fee2e2' }};
+          <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: 600; 
+                      background-color: {{ '#d1fae5' if category == 'success' else '#fee2e2' }}; 
                       color: {{ '#065f46' if category == 'success' else '#991b1b' }};
                       border: 1px solid {{ '#10b981' if category == 'success' else '#dc2626' }};">
             {{ message }}
@@ -249,8 +260,7 @@
     {% endwith %}
 
     <div class="header-row">
-      <h1>{{ title if title else 'Welcome back!' }}</h1>
-      <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+      <h1>{{ title if title else 'Welcome to PortfolioHub' }}</h1>
     </div>
 
     {% if title %}
@@ -317,12 +327,8 @@
           <p class="empty-message">No records found for {{ title }}. Use "+ Add Asset" to begin.</p>
         {% endif %}
       </div>
-    {% else %}
-      <div class="card">
-        <p class="empty-message">Welcome to PortfolioHub. Select a category from the top menu to view your data, or use the "+ Add Asset" button above to track something new.</p>
-      </div>
     {% endif %}
-  </div>
+    </div>
 
 </body>
 </html>
