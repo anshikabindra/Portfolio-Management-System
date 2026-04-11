@@ -28,7 +28,6 @@ from private_equity import private_equity_bp
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
-
 # db_config = {
 #     'user': 'root',
 #     'password': 'Anshika',
@@ -228,12 +227,17 @@ def register():
                 (email, hashed_password)
             )
             conn.commit()
+
+            # This triggers the green "Successfully Registered" message on the login page
+            flash('Successfully Registered! Please login.', 'success')
             return redirect(url_for('login'))
 
         except mysql.connector.IntegrityError:
-            flash('Email already exists.')
+            # Added 'error' category for red styling
+            flash('Email already exists.', 'error')
         except Error as e:
-            flash(f"Database error: {e}")
+            # Added 'error' category for red styling
+            flash(f"Database error: {e}", 'error')
 
         finally:
             if cursor: cursor.close()
@@ -242,7 +246,6 @@ def register():
         return redirect(url_for('register'))
 
     return render_template('register.html')
-
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -404,7 +407,7 @@ def upload_csv():
         cursor.execute(f"SHOW COLUMNS FROM {table_name}")
         columns_info = cursor.fetchall()
         db_columns = [col['Field'].lower() for col in columns_info]
-        
+
         # Columns that MUST be in the CSV (excluding auto-managed fields)
         required_db_columns = [col for col in db_columns if col not in ['id', 'user_id']]
 
@@ -468,6 +471,6 @@ app.register_blueprint(private_equity_bp, url_prefix="/private_equity")
 # ---------------- RUN ---------------- #
 
 if __name__ == '__main__':
-     init_db()
-     port = int(os.environ.get("PORT", 10000))
-     app.run(host="0.0.0.0", port=port)
+    init_db()
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
