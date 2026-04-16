@@ -31,7 +31,7 @@
       padding-top: env(safe-area-inset-top);
     }
 
-    /* --- TOP NAVIGATION (Original Horizontal Style) --- */
+    /* --- TOP NAVIGATION --- */
     .top-nav {
       background-color: var(--nav-color);
       padding: 10px 20px;
@@ -96,16 +96,33 @@
     .dropdown-content a:hover { background-color: #f1f5f9; color: var(--accent-color) !important; }
     .dropdown:hover .dropdown-content { display: block; }
 
-    /* --- MOBILE HAMBURGER (Only for phones) --- */
+    /* --- MOBILE REFINEMENTS --- */
     .hamburger { display: none; font-size: 24px; background: none; border: none; color: white; cursor: pointer; }
 
     @media (max-width: 850px) {
-      .hamburger { display: block; }
+      .hamburger { display: block; position: relative; z-index: 1001; }
+      
       .nav-links-wrapper {
-        display: none; flex-direction: column; position: fixed; top: 0; left: -100%; width: 250px; height: 100vh;
-        background-color: var(--nav-color); padding: 60px 20px; transition: 0.3s; box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+        display: none;
+        pointer-events: none; /* --- GHOST LAYER FIX: Blocks clicks when hidden --- */
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 250px;
+        height: 100vh;
+        background-color: var(--nav-color);
+        padding: 60px 20px;
+        transition: 0.3s;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.3);
       }
-      .nav-links-wrapper.active { left: 0; display: flex; }
+      
+      .nav-links-wrapper.active {
+        left: 0;
+        display: flex;
+        pointer-events: auto; /* --- GHOST LAYER FIX: Re-enables clicks when open --- */
+      }
+
       .nav-links { flex-direction: column; width: 100%; }
       .nav-links a { font-size: 16px; padding: 15px; border-bottom: 1px solid #334155; }
       .top-nav { justify-content: space-between; padding: 15px 20px; }
@@ -114,12 +131,24 @@
     }
 
     /* --- MAIN CONTENT --- */
-    .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
+    .container { padding: 20px; max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
     .header-row { margin: 20px 0; text-align: center; }
     .header-row h1 { font-size: 22px; }
     .logout-btn { background: var(--danger-color); color: white; padding: 8px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; }
     .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
-    .upload-btn { width: 100%; padding: 14px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; }
+    
+    /* --- BETTER FILE INPUT TARGET --- */
+    input[type="file"] {
+      width: 100%;
+      padding: 15px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      background: #f8fafc;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .upload-btn { width: 100%; padding: 14px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 10px; }
     .table-responsive { width: 100%; overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; min-width: 600px; }
     th, td { padding: 15px; text-align: left; border-bottom: 1px solid #f1f5f9; }
@@ -201,7 +230,7 @@
         </form>
 
         <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="csv-upload-form" style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
-          <div class="file-input-wrapper" style="margin-bottom: 15px; font-size: 14px; color: var(--text-muted);">
+          <div class="file-input-wrapper">
              <input type="file" name="csv_file" accept=".csv" required>
           </div>
           <input type="hidden" name="table_name" value="{{ title }}">
