@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PortfolioHub Dashboard</title>
-  
+
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#1e293b">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,252 +12,363 @@
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 
   <style>
-    :root {
-      --bg-color: #f1f5f9;
-      --nav-color: #1e293b;
-      --accent-color: #1e40af;
-      --success-color: #10b981;
-      --danger-color: #dc2626;
-      --text-main: #1e293b;
-      --text-muted: #64748b;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      min-height: 100vh;
+      background-color: #f1f5f9;
+      color: #333;
+      padding-bottom: 70px;
       padding-top: env(safe-area-inset-top);
     }
 
-    /* --- TOP NAVIGATION (Laptop) --- */
-    .top-nav {
-      background-color: var(--nav-color);
-      padding: 10px 20px;
+    header {
+      background-color: #1e293b;
+      color: white;
+      padding: 16px 20px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      align-items: center;
       position: sticky;
       top: 0;
       z-index: 1000;
     }
 
-    .nav-links-wrapper {
+    header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .logout-btn {
+      background: #dc2626;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .asset-card {
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      text-decoration: none;
+      color: #1e293b;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
       display: flex;
       align-items: center;
-      gap: 15px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 10px;
-    }
-
-    .top-nav a, .dropbtn {
-      color: #cbd5e1;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 8px 12px;
-      border-radius: 4px;
-      transition: 0.2s;
-    }
-
-    .top-nav a:hover, .dropdown:hover .dropbtn {
-      color: white;
-      background-color: #334155;
-    }
-
-    /* --- DROPDOWN --- */
-    .dropdown { position: relative; display: inline-block; }
-    .add-asset-nav-btn { background-color: var(--success-color) !important; color: white !important; font-weight: 600 !important; border: none; cursor: pointer; }
-    .dropdown-content {
-      display: none; position: absolute; background-color: white; min-width: 180px;
-      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 100; border-radius: 8px; margin-top: 5px;
-    }
-    .dropdown-content a { color: var(--text-main) !important; padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
-    .dropdown-content a:hover { background-color: #f1f5f9; color: var(--accent-color) !important; }
-    .dropdown:hover .dropdown-content { display: block; }
-
-    /* --- MOBILE SPECIFIC STYLES --- */
-    .hamburger {
-      display: none;
-      font-size: 24px;
-      background: none;
-      border: none;
-      color: white;
       cursor: pointer;
+      transition: transform 0.2s ease;
+      font-weight: 500;
     }
 
-    @media (max-width: 768px) {
-      .hamburger { display: block; }
-      .nav-links-wrapper {
-        display: none; /* Hide standard links on mobile */
-        flex-direction: column;
-        position: fixed;
-        top: 0;
-        left: -100%; /* Off-screen */
-        width: 250px;
-        height: 100vh;
-        background-color: var(--nav-color);
-        padding: 60px 20px;
-        transition: 0.3s;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.3);
-      }
-      .nav-links-wrapper.active { left: 0; display: flex; }
-      .nav-links { flex-direction: column; width: 100%; }
-      .nav-links a { font-size: 16px; padding: 15px; border-bottom: 1px solid #334155; }
-      .top-nav { justify-content: space-between; padding: 15px 20px; }
-      .logout-btn { padding: 6px 12px; font-size: 12px; }
-      
-      /* Close button for mobile menu */
-      .close-menu { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; text-decoration: none; }
+    .asset-card:hover {
+      transform: translateY(-4px);
     }
 
-    /* --- MAIN CONTENT --- */
-    .container { padding: 20px; max-width: 900px; margin: 0 auto; }
-    .header-row { margin: 20px 0; }
-    .header-row h1 { font-size: 22px; }
-    .logout-btn { background: var(--danger-color); color: white; padding: 8px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; }
-    .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
-    .upload-btn { width: 100%; padding: 14px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; }
-    .table-responsive { width: 100%; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 600px; }
-    th, td { padding: 15px; text-align: left; border-bottom: 1px solid #f1f5f9; }
-    th { font-size: 13px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .add-asset-btn-primary {
+      justify-content: center;
+      background: #10b981;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 999px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    table {
+      width: 100%;
+      background: white;
+      border-collapse: collapse;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #64748b;
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .inline-section {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .add-bank-btn {
+      display: none;
+      margin: 20px 0;
+      padding: 10px 22px;
+      border-radius: 20px;
+      background: #10b981;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .upload-csv-btn {
+      margin-left: 10px;
+      padding: 10px 22px;
+      border-radius: 20px;
+      background: #1e40af;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .add-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      z-index: 1000;
+    }
+
+    .add-sheet {
+      position: fixed;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      background: white;
+      border-radius: 24px 24px 0 0;
+      transition: bottom 0.3s ease;
+      z-index: 1002;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding-bottom: 30px;
+    }
+
+    .add-sheet-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      font-weight: 700;
+    }
+
+    .add-item {
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 15px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .add-item:hover { background: #f8fafc; color: #2563eb; }
+
+    #uploadCsvForm { display: none; }
+    #uploadCsvForm input[type="file"] { display: none; }
   </style>
 </head>
+
 <body>
 
-  <nav class="top-nav">
-    <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+<header>
+  <h2>Dashboard</h2>
+  <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+</header>
 
-    <div class="nav-links-wrapper" id="mobileMenu">
-      <a href="javascript:void(0)" class="close-menu" onclick="toggleMobileMenu()">&times;</a>
-      
-      <div class="nav-links">
-        <a href="{{ url_for('bank.bank_transactions') }}">Bank</a>
-        <a href="{{ url_for('fd.fd_transactions') }}">FDs</a>
-        <a href="{{ url_for('equity.equity_transactions') }}">Equity</a>
-        <a href="{{ url_for('mf.mf_transactions') }}">Mutual Funds</a>
-        <a href="{{ url_for('pf.pf_transactions') }}">PF</a>
-        <a href="{{ url_for('category_mapping.category_mapping') }}">Category Mapping</a>
+<main>
 
-        {% if active_assets %}
-          {% if 'Gold' in active_assets %}<a href="{{ url_for('gold.gold_transactions') }}">Gold</a>{% endif %}
-          {% if 'Cash' in active_assets %}<a href="{{ url_for('cash.cash_investments') }}">Cash</a>{% endif %}
-          {% if 'Private Equity' in active_assets %}<a href="{{ url_for('private_equity.private_equity') }}">Private Equity</a>{% endif %}
-          {% if 'Real Estate' in active_assets %}<a href="{{ url_for('real_estate.real_estate') }}">Real Estate</a>{% endif %}
-        {% endif %}
-      </div>
-
-      <div class="dropdown">
-        <button class="dropbtn add-asset-nav-btn">+ Add Asset</button>
-        <div class="dropdown-content">
-          <a href="{{ url_for('gold.add_gold_transaction') }}">Gold</a>
-          <a href="{{ url_for('private_equity.add_private_equity') }}">Private Equity</a>
-          <a href="{{ url_for('real_estate.add_real_estate') }}">Real Estate</a>
-          <a href="{{ url_for('cash.add_cash_investment') }}">Cash</a>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div style="padding: 15px; margin-bottom: 20px; border-radius: 12px; font-weight: 600; 
+                    background-color: {{ '#d1fae5' if category == 'success' else '#fee2e2' }}; 
+                    color: {{ '#065f46' if category == 'success' else '#991b1b' }};
+                    border: 1px solid {{ '#10b981' if category == 'success' else '#dc2626' }};">
+          {{ message }}
         </div>
-      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <h1>Welcome to PortfolioHub</h1>
+
+  <div class="asset-grid">
+    <a href="{{ url_for('bank.bank_transactions') }}" class="asset-card">Bank Transactions</a>
+    <a href="{{ url_for('fd.fd_transactions') }}" class="asset-card">FD Transactions</a>
+    <a href="{{ url_for('equity.equity_transactions') }}" class="asset-card">Equity</a>
+    <a href="{{ url_for('mf.mf_transactions') }}" class="asset-card">Mutual Fund</a>
+    <a href="{{ url_for('pf.pf_transactions') }}" class="asset-card">PF</a>
+    <a href="{{ url_for('category_mapping.category_mapping') }}" class="asset-card">Category Mapping</a>
+
+    {% if gold_exists %}
+    <a href="javascript:void(0)" class="asset-card" onclick="toggleGold()">Gold</a>
+    {% endif %}
+
+    {% if real_estate_exists %}
+    <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('realEstateSection','real_estate')">Real Estate</a>
+    {% endif %}
+
+    {% if cash_exists %}
+    <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('cashSection','cash')">Cash Investments</a>
+    {% endif %}
+
+    {% if private_equity_exists %}
+    <a href="javascript:void(0)" class="asset-card" onclick="toggleSection('peSection','private_equity')">Private Equity</a>
+    {% endif %}
+
+    <div class="asset-card add-asset-btn-primary" onclick="openAddSheet()">+ Add Asset</div>
+  </div>
+
+  <button id="addBankBtn" class="add-bank-btn">+ Add Transaction</button>
+
+  <form id="uploadCsvForm" method="POST" action="/upload_csv" enctype="multipart/form-data">
+    <input type="file" name="csv_file" id="csvFileInput" />
+    <input type="hidden" name="table_name" id="csvTableName" />
+    <button type="button" class="upload-csv-btn" onclick="triggerCsvUpload()">Upload CSV</button>
+  </form>
+
+  {% if gold_exists %}<div id="goldSection" class="inline-section"><h2>Gold Investments</h2><div class="table-responsive"><table><thead><tr>{% for k in gold_investments[0].keys() %}{% if k != 'user_id' %}<th>{{ k }}</th>{% endif %}{% endfor %}</tr></thead><tbody>{% for row in gold_investments %}<tr>{% for k in gold_investments[0].keys() %}{% if k != 'user_id' %}<td>{{ row[k] }}</td>{% endif %}{% endfor %}</tr>{% endfor %}</tbody></table></div></div>{% endif %}
+  {% if real_estate_exists %}<div id="realEstateSection" class="inline-section"><h2>Real Estate</h2><div class="table-responsive"><table><thead><tr>{% for k in real_estate[0].keys() %}{% if k != 'user_id' %}<th>{{ k }}</th>{% endif %}{% endfor %}</tr></thead><tbody>{% for row in real_estate %}<tr>{% for k in real_estate[0].keys() %}{% if k != 'user_id' %}<td>{{ row[k] }}</td>{% endif %}{% endfor %}</tr>{% endfor %}</tbody></table></div></div>{% endif %}
+  {% if cash_exists %}<div id="cashSection" class="inline-section"><h2>Cash Investments</h2><div class="table-responsive"><table><thead><tr>{% for k in cash[0].keys() %}{% if k != 'user_id' %}<th>{{ k }}</th>{% endif %}{% endfor %}</tr></thead><tbody>{% for row in cash %}<tr>{% for k in cash[0].keys() %}{% if k != 'user_id' %}<td>{{ row[k] }}</td>{% endif %}{% endfor %}</tr>{% endfor %}</tbody></table></div></div>{% endif %}
+  {% if private_equity_exists %}<div id="peSection" class="inline-section"><h2>Private Equity</h2><div class="table-responsive"><table><thead><tr>{% for k in private_equity[0].keys() %}{% if k != 'user_id' %}<th>{{ k }}</th>{% endif %}{% endfor %}</tr></thead><tbody>{% for row in private_equity %}<tr>{% for k in private_equity[0].keys() %}{% if k != 'user_id' %}<td>{{ row[k] }}</td>{% endif %}{% endfor %}</tr>{% endfor %}</tbody></table></div></div>{% endif %}
+
+  <div id="transactionsSection">
+    {% if transactions %}
+    <h2>{{ title }}</h2>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>{% for k in transactions[0].keys() %}{% if k != 'user_id' %}<th>{{ k }}</th>{% endif %}{% endfor %}</tr>
+        </thead>
+        <tbody>
+          {% for row in transactions %}
+          <tr>{% for k in transactions[0].keys() %}{% if k != 'user_id' %}<td>{{ row[k] }}</td>{% endif %}{% endfor %}</tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-
-    <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
-  </nav>
-
-  <div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: 600; 
-                      background-color: {{ '#d1fae5' if category == 'success' else '#fee2e2' }}; 
-                      color: {{ '#065f46' if category == 'success' else '#991b1b' }};
-                      border: 1px solid {{ '#10b981' if category == 'success' else '#dc2626' }};">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    <div class="header-row">
-      <h1>{{ title if title else 'Welcome to PortfolioHub' }}</h1>
-    </div>
-
-    {% if title %}
-      <div class="card">
-        <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" style="border-top: none; padding-top: 0;">
-          <div style="margin-bottom: 15px; font-size: 14px; color: var(--text-muted);">
-             <input type="file" name="csv_file" accept=".csv" required>
-          </div>
-          <input type="hidden" name="table_name" value="{{ title }}">
-          <button type="submit" class="upload-btn">Upload CSV</button>
-        </form>
-      </div>
-
-      <div class="card">
-        {% if transactions %}
-          <div class="table-responsive">
-            <table>
-              <thead>
-                {% if title == 'Category Mapping' %}
-                  <tr><th>Category</th><th>Description</th><th>Sub-Category</th><th>Actions</th></tr>
-                {% elif title == 'FD Transactions' %}
-                  <tr><th>Portfolio</th><th>FD no.</th><th>Principal</th><th>Rate</th><th>Maturity</th></tr>
-                {% elif 'Equity' in title or 'Mutual Fund' in title %}
-                  <tr><th>Company</th><th>Date</th><th>Rate</th><th>Qty</th><th>Type</th></tr>
-                {% elif 'Gold' in title %}
-                  <tr><th>Name</th><th>Value/Gram</th><th>Qty</th><th>Date</th></tr>
-                {% elif 'Cash' in title %}
-                  <tr><th>Name</th><th>Invested/Share</th><th>Units</th><th>Date</th><th>Current/Share</th></tr>
-                {% elif 'Real Estate' in title %}
-                  <tr><th>Name</th><th>Invested</th><th>Date</th><th>Current Value</th></tr>
-                {% else %}
-                  <tr><th>Date</th><th>Narration</th><th>Withdrawal</th><th>Deposit</th><th>Balance</th></tr>
-                {% endif %}
-              </thead>
-              <tbody>
-                {% for txn in transactions %}
-                  <tr>
-                    {% if title == 'Category Mapping' %}
-                      <td>{{ txn['Category'] }}</td><td>{{ txn['Description'] }}</td><td>{{ txn['Sub_Category'] }}</td>
-                      <td><a href="{{ url_for('category_mapping.edit_category_mapping') }}?description={{ txn['Description'] | urlencode }}">Edit</a></td>
-                    {% elif title == 'FD Transactions' %}
-                      <td>{{ txn['Portfolio_name'] }}</td><td>{{ txn['FD_number'] }}</td><td>{{ txn['Principal_amt'] }}</td><td>{{ txn['Rate'] }}</td><td>{{ txn['Maturity_date'] }}</td>
-                    {% elif 'Equity' in title or 'Mutual Fund' in title %}
-                      <td>{{ txn['Company_name'] or txn['Investment_name'] }}</td>
-                      <td>{{ txn['Transaction_date'] or txn['Date_of_investment'] }}</td>
-                      <td>{{ txn['Transaction_rate'] or txn['Invested_value_per_share'] }}</td>
-                      <td>{{ txn['Quantity'] or txn['No_of_shares_issued'] }}</td>
-                      <td>{{ txn['Transaction_type'] or 'Invested' }}</td>
-                    {% elif 'Gold' in title %}
-                      <td>{{ txn['investment_name'] }}</td><td>{{ txn['value_per_gram'] }}</td><td>{{ txn['quantity'] }}</td><td>{{ txn['investment_date'] }}</td>
-                    {% elif 'Cash' in title %}
-                      <td>{{ txn['Investment_name'] }}</td><td>{{ txn['Invested_value_per_share'] }}</td><td>{{ txn['No_of_units'] }}</td><td>{{ txn['Date_of_investment'] }}</td><td>{{ txn['Current_value_per_share'] }}</td>
-                    {% elif 'Real Estate' in title %}
-                      <td>{{ txn['Investment_name'] }}</td><td>{{ txn['Invested_value'] }}</td><td>{{ txn['Date_of_investment'] }}</td><td>{{ txn['Current_value'] }}</td>
-                    {% else %}
-                      <td>{{ txn['DT'] }}</td><td>{{ txn['Narration'] }}</td><td>{{ txn['Withdrawal_Amt'] }}</td><td>{{ txn['Deposit_Amt'] }}</td><td>{{ txn['Closing_Balance'] }}</td>
-                    {% endif %}
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <p class="empty-message">No records found for {{ title }}. Use the menu to begin.</p>
-        {% endif %}
-      </div>
     {% endif %}
   </div>
 
-  <script>
-    function toggleMobileMenu() {
-      const menu = document.getElementById('mobileMenu');
-      menu.classList.toggle('active');
-    }
-  </script>
+  <div id="addOverlay" class="add-overlay" onclick="closeAddSheet()"></div>
+  <div id="addSheet" class="add-sheet">
+    <div class="add-sheet-header"><span>Select Asset type</span><button onclick="closeAddSheet()" style="background:none; border:none; font-size:20px; cursor:pointer;">✕</button></div>
+    <div class="add-item" onclick="goTo('/gold/add_gold_transaction')">Gold <span>+</span></div>
+    <div class="add-item" onclick="goTo('/real_estate/add_real_estate')">Real Estate <span>+</span></div>
+    <div class="add-item" onclick="goTo('/private_equity/add_private_equity')">Private Equity <span>+</span></div>
+    <div class="add-item" onclick="goTo('/cash/add_cash_investment')">Cash Investments <span>+</span></div>
+  </div>
 
+</main>
+
+<script>
+function toggleSection(sectionId, asset) {
+  document.querySelectorAll('.inline-section').forEach(sec => sec.style.display = "none");
+  const tx = document.getElementById("transactionsSection");
+  if (tx) tx.style.display = "none";
+  document.getElementById(sectionId).style.display = "block";
+  configureButtons(asset);
+}
+
+function toggleGold() {
+  document.querySelectorAll('.inline-section').forEach(sec => sec.style.display = "none");
+  document.getElementById("goldSection").style.display = "block";
+  if (document.getElementById("transactionsSection")) document.getElementById("transactionsSection").style.display = "none";
+  configureButtons("gold");
+}
+
+function configureButtons(asset){
+  const addBtn = document.getElementById("addBankBtn");
+  const uploadForm = document.getElementById("uploadCsvForm");
+  const csvTableInput = document.getElementById("csvTableName");
+
+  const config = {
+    gold: { add: "/gold/add_gold_transaction", table: "Gold Investments" },
+    real_estate: { add: "/real_estate/add_real_estate", table: "real estate" },
+    private_equity: { add: "/private_equity/add_private_equity", table: "private equity" },
+    cash: { add: "/cash/add_cash_investment", table: "cash" }
+  };
+
+  if(config[asset]){
+    addBtn.style.display = "inline-block";
+    addBtn.onclick = () => location.href = config[asset].add;
+    uploadForm.style.display = "inline-block";
+    csvTableInput.value = config[asset].table;
+  }
+}
+
+function openAddSheet() {
+  document.getElementById('addOverlay').style.display = 'block';
+  document.getElementById('addSheet').style.bottom = '0';
+}
+
+function closeAddSheet() {
+  document.getElementById('addOverlay').style.display = 'none';
+  document.getElementById('addSheet').style.bottom = '-100%';
+}
+
+function goTo(path) { window.location.href = path; }
+
+function triggerCsvUpload() {
+  const file = document.getElementById("csvFileInput");
+  file.click();
+  file.onchange = () => file.files.length && document.getElementById("uploadCsvForm").submit();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const path = window.location.pathname;
+  const addBtn = document.getElementById("addBankBtn");
+  const uploadForm = document.getElementById("uploadCsvForm");
+  const csvTableInput = document.getElementById("csvTableName");
+
+  // Corrected paths to match Blueprints
+  const routeConfig = {
+    "/bank/bank_transactions": { add: "/bank/add_bank_transaction", table: "Bank Transactions" },
+    "/fd/fd_transactions": { add: "/fd/add_fd_transaction", table: "FD Transactions" },
+    "/equity/equity_transactions": { add: "/equity/add_equity_transaction", table: "Equity Transactions" },
+    "/mf/mf_transactions": { add: "/mf/add_mf_transaction", table: "Mutual Fund Transactions" },
+    "/pf/pf_transactions": { add: "/pf/add_pf_transaction", table: "PF Transactions" },
+    "/category_mapping/category_mapping": { add: "/category_mapping/add_category_mapping", table: "category mapping" },
+    "/gold/gold_transactions": { add: "/gold/add_gold_transaction", table: "Gold Investments" },
+    "/real_estate/real_estate": { add: "/real_estate/add_real_estate", table: "real estate" },
+    "/private_equity/private_equity": { add: "/private_equity/add_private_equity", table: "private equity" },
+    "/cash/cash_investments": { add: "/cash/add_cash_investment", table: "cash" }
+  };
+
+  if (routeConfig[path]) {
+    addBtn.style.display = "inline-block";
+    addBtn.onclick = () => location.href = routeConfig[path].add;
+    uploadForm.style.display = "inline-block";
+    csvTableInput.value = routeConfig[path].table;
+  }
+});
+</script>
 </body>
 </html>
