@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PortfolioHub Dashboard</title>
-  
+
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#1e293b">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -73,7 +73,7 @@
     /* --- DROPDOWN & BUTTONS --- */
     .dropdown { position: relative; display: inline-block; }
     .add-asset-nav-btn { background-color: var(--success-color) !important; color: white !important; font-weight: 600 !important; border: none; cursor: pointer; }
-    
+
     .add-btn {
       padding: 10px 20px;
       background-color: var(--success-color);
@@ -101,7 +101,7 @@
 
     @media (max-width: 850px) {
       .hamburger { display: block; position: relative; z-index: 1001; }
-      
+
       .nav-links-wrapper {
         display: none;
         pointer-events: none; /* --- GHOST LAYER FIX: Blocks clicks when hidden --- */
@@ -116,7 +116,7 @@
         transition: 0.3s;
         box-shadow: 5px 0 15px rgba(0,0,0,0.3);
       }
-      
+
       .nav-links-wrapper.active {
         left: 0;
         display: flex;
@@ -136,7 +136,7 @@
     .header-row h1 { font-size: 22px; }
     .logout-btn { background: var(--danger-color); color: white; padding: 8px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; }
     .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
-    
+
     /* --- BETTER FILE INPUT TARGET --- */
     input[type="file"] {
       width: 100%;
@@ -160,10 +160,10 @@
 
   <nav class="top-nav">
     <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
-    
+
     <div class="nav-links-wrapper" id="mobileMenu">
       <a href="javascript:void(0)" class="close-menu" onclick="toggleMobileMenu()">&times;</a>
-      
+
       <div class="nav-links">
         <a href="{{ url_for('bank.bank_transactions') }}">Bank</a>
         <a href="{{ url_for('fd.fd_transactions') }}">FDs</a>
@@ -198,8 +198,8 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: 600; 
-                      background-color: {{ '#d1fae5' if category == 'success' else '#fee2e2' }}; 
+          <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: 600;
+                      background-color: {{ '#d1fae5' if category == 'success' else '#fee2e2' }};
                       color: {{ '#065f46' if category == 'success' else '#991b1b' }};
                       border: 1px solid {{ '#10b981' if category == 'success' else '#dc2626' }};">
             {{ message }}
@@ -298,10 +298,213 @@
     {% endif %}
   </div>
 
+  <div class="portfolio-chat-widget">
+    <button class="chat-trigger-btn" onclick="togglePortfolioChat()">💬</button>
+
+    <div class="chat-window-box" id="portfolioChatBox">
+      <div class="chat-window-header">
+        <span>PortfolioHub Control Terminal</span>
+        <button onclick="togglePortfolioChat()">✕</button>
+      </div>
+      <div class="chat-messages-container" id="portfolioChatMessages">
+        <div class="chat-bubble assistant-bubble">
+          Hello! I am your tracking ledger terminal. I can process database commands directly!<br><br>
+          Try typing:<br>
+          • <code>add bank | Salary Input | 45000</code><br>
+          • <code>modify bank [id] narration [text]</code><br>
+          • <code>delete bank [id]</code>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="portfolioChatInput" placeholder="Enter add, modify, or delete commands..." onkeypress="checkChatEnterKey(event)">
+        <button onclick="submitPortfolioQuery()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .portfolio-chat-widget {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 9999;
+      font-family: 'Poppins', sans-serif;
+    }
+    .chat-trigger-btn {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease, background-color 0.2s;
+    }
+    .chat-trigger-btn:hover {
+      transform: scale(1.05);
+      background-color: #1e3a8a;
+    }
+    .chat-window-box {
+      display: none;
+      flex-direction: column;
+      width: 360px;
+      height: 460px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .chat-window-header {
+      background-color: var(--nav-color);
+      color: white;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .chat-window-header button { background: none; border: none; color: #cbd5e1; font-size: 16px; cursor: pointer; }
+    .chat-window-header button:hover { color: white; }
+    .chat-messages-container {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background-color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chat-bubble {
+      max-width: 82%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .assistant-bubble {
+      background-color: #e2e8f0;
+      color: var(--text-main);
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+    }
+    .owner-bubble {
+      background-color: var(--accent-color);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+    }
+    .chat-input-row {
+      display: flex;
+      padding: 10px;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+      gap: 6px;
+    }
+    .chat-input-row input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      outline: none;
+      font-size: 13px;
+    }
+    .chat-input-row button {
+      background-color: var(--success-color);
+      color: white;
+      border: none;
+      padding: 0 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .chat-input-row button:hover { background-color: #059669; }
+  </style>
+
   <script>
     function toggleMobileMenu() {
       const menu = document.getElementById('mobileMenu');
       menu.classList.toggle('active');
+    }
+
+    function togglePortfolioChat() {
+      const panel = document.getElementById('portfolioChatBox');
+      if (panel.style.display === 'flex') {
+        panel.style.display = 'none';
+      } else {
+        panel.style.display = 'flex';
+        forceChatScrollToBottom();
+      }
+    }
+
+    function checkChatEnterKey(event) {
+      if (event.key === 'Enter') {
+        submitPortfolioQuery();
+      }
+    }
+
+    function forceChatScrollToBottom() {
+      const viewer = document.getElementById('portfolioChatMessages');
+      viewer.scrollTop = viewer.scrollHeight;
+    }
+
+    function submitPortfolioQuery() {
+      const field = document.getElementById('portfolioChatInput');
+      const text = field.value.trim();
+      if (!text) return;
+
+      const windowFrame = document.getElementById('portfolioChatMessages');
+
+      // Append Client Input Bubble
+      const userDiv = document.createElement('div');
+      userDiv.className = 'chat-bubble owner-bubble';
+      userDiv.textContent = text;
+      windowFrame.appendChild(userDiv);
+
+      field.value = '';
+      forceChatScrollToBottom();
+
+      // Dispatch payload to backend chatbot terminal
+      fetch('/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      })
+      .then(res => res.json())
+      .then(data => {
+        // Append Assistant Response Bubble
+        const botDiv = document.createElement('div');
+        botDiv.className = 'chat-bubble assistant-bubble';
+        botDiv.innerHTML = data.reply;
+        windowFrame.appendChild(botDiv);
+        forceChatScrollToBottom();
+
+        // AUTOMATIC GRID REFRESH CONTROLLER
+        // If query message holds checkmark confirmation token, refresh context tables
+        if (data.reply.includes('✅')) {
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
+      })
+      .catch(error => {
+        console.error("Assistant network exception:", error);
+        const errDiv = document.createElement('div');
+        errDiv.className = 'chat-bubble assistant-bubble';
+        errDiv.textContent = "Database connectivity timeout. Please double-check connection parameters.";
+        windowFrame.appendChild(errDiv);
+        forceChatScrollToBottom();
+      });
     }
   </script>
 
