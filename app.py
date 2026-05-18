@@ -7,7 +7,8 @@ import os
 #    "unix_socket": f"/cloudsql/{os.environ['INSTANCE_CONNECTION_NAME']}"
 # }
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+# Added jsonify to the Flask import line to support chatbot responses
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import mysql.connector
 from mysql.connector import Error
 import csv
@@ -247,6 +248,7 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -453,6 +455,200 @@ def upload_csv():
         if conn: conn.close()
 
     return redirect(request.referrer)
+
+
+# ---------------- CHATBOT TRANSACTION TERMINAL ---------------- #
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    if 'user_id' not in session:
+        return jsonify({"reply": "Please log in to your account first so I can access your secure ledger."})
+
+    data = request.get_json() or {}
+    user_message = data.get('message', '').strip()
+    user_message_lower = user_message.lower()
+    user_id = session['user_id']
+
+    # Blueprint table structure mapping reference
+    table_map = {
+        'bank': 'bank_transaction',
+        'fd': 'fd_transactions',
+        'equity': 'equity_transactions',
+        'mutual fund': 'Mutual_Fund_transactions',
+        'mf': 'Mutual_Fund_transactions',
+        'pf': 'pf',
+        'gold': 'gold_investments',
+        'real estate': 'real_estate',
+        'cash': 'cash_investments',
+        'private equity': 'private_equity'
+    }
+
+    # 1. HANDLE DELETE COMMAND (e.g., delete bank 14)
+    if user_message_lower.startswith('delete '):
+        parts = user_message.split()
+        if len(parts) >= 3:
+            asset_key = parts[1].lower()
+            tx_id = parts[2]
+
+            # Adjust for multi-word asset namespaces
+            if len(parts) >= 4 and f"{parts[1]} {parts[2]}".lower() in table_map:
+                asset_key = f"{parts[1]} {parts[2]}".lower()
+                tx_id = parts[3]
+
+            table_name = table_map.get(asset_key)
+            if table_name and tx_id.isdigit():
+                try:
+                    conn = mysql.connector.connect(**db_config)
+                    cursor = conn.cursor()
+                    cursor.execute(f"DELETE FROM {table_name} WHERE id = %s AND user_id = %s", (tx_id, user_id))
+                    conn.commit()
+                    affected = cursor.rowcount
+                    cursor.close()
+                    conn.close()
+
+                    if affected > 0:
+                        return jsonify({"reply": f"✅ Successfully deleted ID {tx_id} from {asset_key.upper()} records."})
+                    else:
+                        return jsonify({"reply": f"❌ Transaction ID {tx_id} not found under your account profile."})
+                except Exception as e:
+                    return jsonify({"reply": f"❌ Error deleting row: {str(e)}"})
+
+        return jsonify({"reply": "💡 **Delete Syntax:** `delete [asset_type] [id]` (Example: `delete bank 14` or `delete gold 3`)"})
+
+    # 2. HANDLE MODIFY COMMAND (e.g., modify bank 12 narration Salary)
+    if user_message_lower.startswith('modify '):
+        parts = user_message.split(maxsplit=4)
+        if len(parts) >= 5:
+            asset_key = parts[1].lower()
+            tx_id = parts[2]
+            field = parts[3].lower()
+            new_value = parts[4]
+
+            table_name = table_map.get(asset_key)
+            if table_name and tx_id.isdigit():
+                # Map simple colloquial text fields to your exact DB schema names
+                field_map = {
+                    'narration': 'Narration',
+                    'company': 'Company_name',
+                    'quantity': 'Quantity',
+                    'qty': 'Quantity',
+                    'rate': 'Transaction_rate',
+                    'name': 'investment_name'
+                }
+                actual_field = field_map.get(field, field)
+
+                # Process conditional amount distributions for ledger balances
+                if asset_key in ['bank', 'pf'] and field == 'amount':
+                    try:
+                        val = float(new_value)
+                        if val >= 0:
+                            query = f"UPDATE {table_name} SET Deposit_Amt = %s, Withdrawal_Amt = 0 WHERE id = %s AND user_id = %s"
+                        else:
+                            query = f"UPDATE {table_name} SET Withdrawal_Amt = %s, Deposit_Amt = 0 WHERE id = %s AND user_id = %s"
+                            val = abs(val)
+                        new_value = val
+                    except ValueError:
+                        return jsonify({"reply": "❌ Amount parameters must remain purely numeric values."})
+                else:
+                    query = f"UPDATE {table_name} SET {actual_field} = %s WHERE id = %s AND user_id = %s"
+
+                try:
+                    conn = mysql.connector.connect(**db_config)
+                    cursor = conn.cursor()
+                    cursor.execute(query, (new_value, tx_id, user_id))
+                    conn.commit()
+                    affected = cursor.rowcount
+                    cursor.close()
+                    conn.close()
+
+                    if affected > 0:
+                        return jsonify({"reply": f"✅ Successfully updated entry {tx_id} in {asset_key.upper()} ({field} -> {new_value})."})
+                    else:
+                        return jsonify({"reply": f"❌ Transaction ID {tx_id} does not map to your profile lines."})
+                except Exception as e:
+                    return jsonify({"reply": f"❌ Database mutation error: {str(e)}"})
+
+        return jsonify({"reply": "💡 **Modify Syntax:** `modify [asset] [id] [field] [value]` (Example: `modify bank 12 narration New Salary`)"})
+
+    # 3. HANDLE ADD COMMAND USING PIPE SEPARATORS
+    if user_message_lower.startswith('add '):
+        if '|' in user_message:
+            parts = [p.strip() for p in user_message.split('|')]
+            cmd_header = parts[0].split()
+            if len(cmd_header) >= 2:
+                asset_key = " ".join(cmd_header[1:]).lower()
+                table_name = table_map.get(asset_key)
+
+                # Handle Banking & Provident Fund Ledgers
+                if table_name in ['bank_transaction', 'pf'] and len(parts) >= 3:
+                    narration = parts[1]
+                    try:
+                        amt = float(parts[2])
+                        dep = amt if amt >= 0 else 0
+                        wit = abs(amt) if amt < 0 else 0
+
+                        conn = mysql.connector.connect(**db_config)
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            f"INSERT INTO {table_name} (DT, Narration, Deposit_Amt, Withdrawal_Amt, user_id) VALUES (CURDATE(), %s, %s, %s, %s)",
+                            (narration, dep, wit, user_id)
+                        )
+                        conn.commit()
+                        cursor.close()
+                        conn.close()
+                        return jsonify({"reply": f"✅ Posted transaction to {asset_key.upper()}: '{narration}' (₹{amt})."})
+                    except Exception as e:
+                        return jsonify({"reply": f"❌ Insertion error: {str(e)}"})
+
+                # Handle Gold Commodities
+                elif table_name == 'gold_investments' and len(parts) >= 4:
+                    name = parts[1]
+                    try:
+                        rate = float(parts[2])
+                        qty = float(parts[3])
+
+                        conn = mysql.connector.connect(**db_config)
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            "INSERT INTO gold_investments (investment_name, value_per_gram, quantity, investment_date, user_id) VALUES (%s, %s, %s, CURDATE(), %s)",
+                            (name, rate, qty, user_id)
+                        )
+                        conn.commit()
+                        cursor.close()
+                        conn.close()
+                        return jsonify({"reply": f"✅ Logged commodity position to GOLD: '{name}' ({qty}g)."})
+                    except Exception as e:
+                        return jsonify({"reply": f"❌ Commodity post error: {str(e)}"})
+
+                # Handle Asset Markets (Equities / Mutual Funds)
+                elif table_name in ['equity_transactions', 'Mutual_Fund_transactions'] and len(parts) >= 5:
+                    comp = parts[1]
+                    try:
+                        rate = float(parts[2])
+                        qty = int(parts[3])
+                        tx_type = parts[4]
+
+                        conn = mysql.connector.connect(**db_config)
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            f"INSERT INTO {table_name} (Company_name, Transaction_date, Transaction_rate, Quantity, Transaction_type, user_id) VALUES (%s, CURDATE(), %s, %s, %s, %s)",
+                            (comp, rate, qty, tx_type, user_id)
+                        )
+                        conn.commit()
+                        cursor.close()
+                        conn.close()
+                        return jsonify({"reply": f"✅ Recorded security transaction inside {asset_key.upper()} registry."})
+                    except Exception as e:
+                        return jsonify({"reply": f"❌ Security tracking failure: {str(e)}"})
+
+        return jsonify({"reply": "💡 **Add Command Formats (Use '|' as separators):**<br>"
+                                 "• `add bank | Salary Input | 45000`<br>"
+                                 "• `add bank | ATM Cash Run | -2000`<br>"
+                                 "• `add gold | Bullion Coin | 6300 | 10`<br>"
+                                 "• `add equity | Tata Motors | 920 | 25 | Buy`"})
+
+    # Standard navigational fallback advice
+    return jsonify({"reply": "I am ready for transactions! Use commands like `add bank | text | amt`, `modify bank [id] [field] [val]`, or `delete bank [id]`."})
 
 
 # ---------------- BLUEPRINTS ---------------- #
