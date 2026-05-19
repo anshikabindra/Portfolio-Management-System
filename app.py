@@ -483,92 +483,108 @@ def chatbot():
         'private equity': 'private_equity'
     }
 
-    # 1. HANDLE DELETE COMMAND (e.g., delete bank 14)
+    # 1. HANDLE DELETE COMMAND BY NARRATION/NAME (e.g., delete bank | Salary)
     if user_message_lower.startswith('delete '):
-        parts = user_message.split()
-        if len(parts) >= 3:
-            asset_key = parts[1].lower()
-            tx_id = parts[2]
+        if '|' in user_message:
+            parts = [p.strip() for p in user_message.split('|')]
+            cmd_header = parts[0].split()
+            if len(cmd_header) >= 2:
+                asset_key = " ".join(cmd_header[1:]).lower()
+                target_identifier = parts[1]
+                table_name = table_map.get(asset_key)
 
-            # Adjust for multi-word asset namespaces
-            if len(parts) >= 4 and f"{parts[1]} {parts[2]}".lower() in table_map:
-                asset_key = f"{parts[1]} {parts[2]}".lower()
-                tx_id = parts[3]
+                if table_name:
+                    # Dynamically match identifier column name based on asset type
+                    ident_column = 'investment_name' if asset_key in ['gold', 'real estate', 'cash', 'private equity'] else 'Narration'
+                    if asset_key in ['equity', 'mutual fund', 'mf']:
+                        ident_column = 'Company_name'
+                    elif asset_key == 'fd':
+                        ident_column = 'Portfolio_name'
 
-            table_name = table_map.get(asset_key)
-            if table_name and tx_id.isdigit():
-                try:
-                    conn = mysql.connector.connect(**db_config)
-                    cursor = conn.cursor()
-                    cursor.execute(f"DELETE FROM {table_name} WHERE id = %s AND user_id = %s", (tx_id, user_id))
-                    conn.commit()
-                    affected = cursor.rowcount
-                    cursor.close()
-                    conn.close()
-
-                    if affected > 0:
-                        return jsonify({"reply": f"✅ Successfully deleted ID {tx_id} from {asset_key.upper()} records."})
-                    else:
-                        return jsonify({"reply": f"❌ Transaction ID {tx_id} not found under your account profile."})
-                except Exception as e:
-                    return jsonify({"reply": f"❌ Error deleting row: {str(e)}"})
-
-        return jsonify({"reply": "💡 **Delete Syntax:** `delete [asset_type] [id]` (Example: `delete bank 14` or `delete gold 3`)"})
-
-    # 2. HANDLE MODIFY COMMAND (e.g., modify bank 12 narration Salary)
-    if user_message_lower.startswith('modify '):
-        parts = user_message.split(maxsplit=4)
-        if len(parts) >= 5:
-            asset_key = parts[1].lower()
-            tx_id = parts[2]
-            field = parts[3].lower()
-            new_value = parts[4]
-
-            table_name = table_map.get(asset_key)
-            if table_name and tx_id.isdigit():
-                # Map simple colloquial text fields to your exact DB schema names
-                field_map = {
-                    'narration': 'Narration',
-                    'company': 'Company_name',
-                    'quantity': 'Quantity',
-                    'qty': 'Quantity',
-                    'rate': 'Transaction_rate',
-                    'name': 'investment_name'
-                }
-                actual_field = field_map.get(field, field)
-
-                # Process conditional amount distributions for ledger balances
-                if asset_key in ['bank', 'pf'] and field == 'amount':
                     try:
-                        val = float(new_value)
-                        if val >= 0:
-                            query = f"UPDATE {table_name} SET Deposit_Amt = %s, Withdrawal_Amt = 0 WHERE id = %s AND user_id = %s"
+                        conn = mysql.connector.connect(**db_config)
+                        cursor = conn.cursor()
+                        # Secures action via user_id, targets rows via Narration/Name
+                        query = f"DELETE FROM {table_name} WHERE {ident_column} = %s AND user_id = %s"
+                        cursor.execute(query, (target_identifier, user_id))
+                        conn.commit()
+                        affected = cursor.rowcount
+                        cursor.close()
+                        conn.close()
+
+                        if affected > 0:
+                            return jsonify({"reply": f"✅ Successfully deleted records matching '{target_identifier}' from your {asset_key.upper()} ledger."})
                         else:
-                            query = f"UPDATE {table_name} SET Withdrawal_Amt = %s, Deposit_Amt = 0 WHERE id = %s AND user_id = %s"
-                            val = abs(val)
-                        new_value = val
-                    except ValueError:
-                        return jsonify({"reply": "❌ Amount parameters must remain purely numeric values."})
-                else:
-                    query = f"UPDATE {table_name} SET {actual_field} = %s WHERE id = %s AND user_id = %s"
+                            return jsonify({"reply": f"❌ No records found matching '{target_identifier}' under your profile."})
+                    except Exception as e:
+                        return jsonify({"reply": f"❌ Error deleting row: {str(e)}"})
 
-                try:
-                    conn = mysql.connector.connect(**db_config)
-                    cursor = conn.cursor()
-                    cursor.execute(query, (new_value, tx_id, user_id))
-                    conn.commit()
-                    affected = cursor.rowcount
-                    cursor.close()
-                    conn.close()
+        return jsonify({"reply": "💡 **Delete Syntax:** `delete [asset_type] | [Narration/Name]` (Example: `delete bank | ATM Cash Run` or `delete gold | Bullion Coin`)"})
 
-                    if affected > 0:
-                        return jsonify({"reply": f"✅ Successfully updated entry {tx_id} in {asset_key.upper()} ({field} -> {new_value})."})
+    # 2. HANDLE MODIFY COMMAND BY NARRATION/NAME (e.g., modify bank | Old Text | narration | New Text)
+    if user_message_lower.startswith('modify '):
+        if '|' in user_message:
+            parts = [p.strip() for p in user_message.split('|')]
+            cmd_header = parts[0].split()
+            if len(cmd_header) >= 2 and len(parts) >= 4:
+                asset_key = " ".join(cmd_header[1:]).lower()
+                target_identifier = parts[1]
+                field = parts[2].lower()
+                new_value = parts[3]
+                table_name = table_map.get(asset_key)
+
+                if table_name:
+                    ident_column = 'investment_name' if asset_key in ['gold', 'real estate', 'cash', 'private equity'] else 'Narration'
+                    if asset_key in ['equity', 'mutual fund', 'mf']:
+                        ident_column = 'Company_name'
+                    elif asset_key == 'fd':
+                        ident_column = 'Portfolio_name'
+
+                    # Field naming map aligning with your exact database casings
+                    field_map = {
+                        'narration': 'Narration',
+                        'company': 'Company_name',
+                        'quantity': 'Quantity',
+                        'qty': 'Quantity',
+                        'rate': 'Transaction_rate',
+                        'name': 'investment_name',
+                        'chq_ref_no': 'CHq_Ref_No',
+                        'bank_name': 'bank_name'
+                    }
+                    actual_field = field_map.get(field, field)
+
+                    # Manage Withdrawal / Deposit distribution routing dynamically for simple text allocations
+                    if asset_key in ['bank', 'pf'] and field == 'amount':
+                        try:
+                            val = float(new_value)
+                            if val >= 0:
+                                query = f"UPDATE {table_name} SET Deposit_Amt = %s, Withdrawal_Amt = 0 WHERE {ident_column} = %s AND user_id = %s"
+                            else:
+                                query = f"UPDATE {table_name} SET Withdrawal_Amt = %s, Deposit_Amt = 0 WHERE {ident_column} = %s AND user_id = %s"
+                                val = abs(val)
+                            new_value = val
+                        except ValueError:
+                            return jsonify({"reply": "❌ Amount parameters must remain purely numeric numbers."})
                     else:
-                        return jsonify({"reply": f"❌ Transaction ID {tx_id} does not map to your profile lines."})
-                except Exception as e:
-                    return jsonify({"reply": f"❌ Database mutation error: {str(e)}"})
+                        query = f"UPDATE {table_name} SET {actual_field} = %s WHERE {ident_column} = %s AND user_id = %s"
 
-        return jsonify({"reply": "💡 **Modify Syntax:** `modify [asset] [id] [field] [value]` (Example: `modify bank 12 narration New Salary`)"})
+                    try:
+                        conn = mysql.connector.connect(**db_config)
+                        cursor = conn.cursor()
+                        cursor.execute(query, (new_value, target_identifier, user_id))
+                        conn.commit()
+                        affected = cursor.rowcount
+                        cursor.close()
+                        conn.close()
+
+                        if affected > 0:
+                            return jsonify({"reply": f"✅ Successfully updated entries matching '{target_identifier}' in {asset_key.upper()} ({field} -> {new_value})."})
+                        else:
+                            return jsonify({"reply": f"❌ No matching records found under your account profile lines."})
+                    except Exception as e:
+                        return jsonify({"reply": f"❌ Database mutation error: {str(e)}"})
+
+        return jsonify({"reply": "💡 **Modify Syntax:** `modify [asset] | [Current Narration/Name] | [Field] | [New Value]` (Example: `modify bank | Old Salary | narration | Updated Salary`)"})
 
     # 3. HANDLE ADD COMMAND USING PIPE SEPARATORS
     if user_message_lower.startswith('add '):
@@ -579,7 +595,7 @@ def chatbot():
                 asset_key = " ".join(cmd_header[1:]).lower()
                 table_name = table_map.get(asset_key)
 
-                # Handle Banking & Provident Fund Ledgers
+                # Handle Banking & Provident Fund Ledgers matching exact columns
                 if table_name in ['bank_transaction', 'pf'] and len(parts) >= 3:
                     narration = parts[1]
                     try:
@@ -590,7 +606,7 @@ def chatbot():
                         conn = mysql.connector.connect(**db_config)
                         cursor = conn.cursor()
                         cursor.execute(
-                            f"INSERT INTO {table_name} (DT, Narration, Deposit_Amt, Withdrawal_Amt, user_id) VALUES (CURDATE(), %s, %s, %s, %s)",
+                            f"INSERT INTO {table_name} (DT, Narration, Deposit_Amt, Withdrawal_Amt, Value_Dt, user_id) VALUES (CURDATE(), %s, %s, %s, CURDATE(), %s)",
                             (narration, dep, wit, user_id)
                         )
                         conn.commit()
@@ -647,8 +663,7 @@ def chatbot():
                                  "• `add gold | Bullion Coin | 6300 | 10`<br>"
                                  "• `add equity | Tata Motors | 920 | 25 | Buy`"})
 
-    # Standard navigational fallback advice
-    return jsonify({"reply": "I am ready for transactions! Use commands like `add bank | text | amt`, `modify bank [id] [field] [val]`, or `delete bank [id]`."})
+    return jsonify({"reply": "I am ready for transactions! Use commands like `add bank | text | amt`, `modify bank | current_narration | field | new_val`, or `delete bank | narration`."})
 
 
 # ---------------- BLUEPRINTS ---------------- #
